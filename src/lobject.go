@@ -81,6 +81,7 @@ func tsvalue(o *lua_TValue) *TString {
 	//return (&rawtsvalue(o)->tsv);
 	return rawtsvalue(o);
 }
+/*
 func rawuvalue(o) *Udata {
 	return check_exp(ttisuserdata(o), &(o)->value.gc->u);
 }
@@ -99,3 +100,4 @@ func bvalue(o)	{
 func thvalue(o)	{
 	return check_exp(ttisthread(o), &(o)->value.gc->th);
 }
+*/
