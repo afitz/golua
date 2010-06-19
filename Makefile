@@ -8,6 +8,7 @@ TARG=lua
 GOFILES=\
 	src/lmem.go \
 	src/lstate.go \
-	src/lua.go
+	src/lua.go \
+	src/lobject.go
 
 include $(GOROOT)/src/Make.pkg
