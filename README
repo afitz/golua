@@ -1,1 +1,1 @@
-Port of Lua from C to Go Programming Language
+Go Bindings for the lua C API
