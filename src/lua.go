@@ -6,22 +6,6 @@ import "C"
 
 import "unsafe"
 
-//DEFINES
-const GLOBALSINDEX = (-10002)
-
-const (
-	TNONE			= (-1)
-	TNIL			= 0
-	TBOOLEAN		= 1
-	TLIGHTUSERDATA	= 2
-	TNUMBER			= 3
-	TSTRING			= 4
-	TTABLE			= 5
-	TFUNCTION		= 6
-	TUSERDATA		= 7
-	TTHREAD			= 8
-)
-
 //like lua_Writer, but as p will contain capacity, not needed as separate param
 type Writer func(L *State, p []byte, ud interface{});
 //like lua reader, but the return slice has the size, so does 
@@ -167,6 +151,10 @@ func Concat(L *State, n int) {
 	C.lua_concat(L.s,C.int(n));
 }
 
+func CreateTable(L *State, narr int, nrec int) {
+	C.lua_createtable(L.s, C.int(narr), C.int(nrec));
+}
+
 //CPcall replacement
 func GoPCall(L *State, fun GoFunction, ud interface{}) int {
 	//TODO: need to emulate by pushing a c closure as in pushgofunction
@@ -193,7 +181,7 @@ func GetField(L *State, index int, k string) {
 	C.lua_getfield(L.s, C.int(index), C.CString(k))
 }
 
-func GetGlobal(L *State, name string)	{ GetField(L, GLOBALSINDEX, name) }
+func GetGlobal(L *State, name string)	{ GetField(L, LUA_GLOBALSINDEX, name) }
 
 func GetMetaTable(L *State, index int) bool {
 	return C.lua_getmetatable(L.s, C.int(index)) != 0
@@ -206,7 +194,7 @@ func GetTop(L *State) int	{ return int(C.lua_gettop(L.s)) }
 func Insert(L *State, index int)	{ C.lua_insert(L.s, C.int(index)) }
 
 func IsBoolean(L *State, index int) bool {
-	return int(C.lua_type(L.s, C.int(index))) == TBOOLEAN
+	return int(C.lua_type(L.s, C.int(index))) == LUA_TBOOLEAN
 }
 
 func IsGoFunction(L *State, index int) bool {
@@ -217,16 +205,16 @@ func IsGoFunction(L *State, index int) bool {
 //TODO: add iscfunction
 
 func IsFunction(L *State, index int) bool {
-	return int(C.lua_type(L.s, C.int(index))) == TFUNCTION
+	return int(C.lua_type(L.s, C.int(index))) == LUA_TFUNCTION
 }
 
 func IsLightUserdata(L *State, index int) bool {
-	return int(C.lua_type(L.s, C.int(index))) == TLIGHTUSERDATA
+	return int(C.lua_type(L.s, C.int(index))) == LUA_TLIGHTUSERDATA
 }
 
-func IsNil(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == TNIL }
+func IsNil(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TNIL }
 
-func IsNone(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == TNONE }
+func IsNone(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TNONE }
 
 func IsNoneOrNil(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) <= 0 }
 
@@ -234,10 +222,10 @@ func IsNumber(L *State, index int) bool	{ return C.lua_isnumber(L.s, C.int(index
 
 func IsString(L *State, index int) bool	{ return C.lua_isstring(L.s, C.int(index)) == 1 }
 
-func IsTable(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == TTABLE }
+func IsTable(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TTABLE }
 
 func IsThread(L *State, index int) bool {
-	return int(C.lua_type(L.s, C.int(index))) == TTHREAD
+	return int(C.lua_type(L.s, C.int(index))) == LUA_TTHREAD
 }
 
 func IsUserdata(L *State, index int) bool	{ return C.lua_isuserdata(L.s, C.int(index)) == 1 }
@@ -251,7 +239,9 @@ func Load(L *State, reader Reader, data interface{}, chunkname string) int {
 	return 0;
 }
 
-func NewState(f Alloc, ud interface{}) *State {
+//NOTE: lua_newstate becomes NewStateAlloc whereas
+//		luaL_newstate becomes NewState
+func NewStateAlloc(f Alloc, ud interface{}) *State {
 	//TODO: implement a newState function which will initialize a State
 	//		call with result from C.lua_newstate for the s initializer
 	//ls := lua_newstate(
@@ -298,7 +288,7 @@ func PushBoolean(L *State, b bool) {
 }
 
 func PushString(L *State, str string) {
-	//TODO:
+	C.lua_pushstring(L.s,C.CString(str));
 }
 
 func PushInteger(L *State, n int) {
@@ -371,7 +361,7 @@ func SetField(L *State, index int, k string) {
 }
 
 func SetGlobal(L *State, name string) {
-	C.lua_setfield(L.s, C.int(GLOBALSINDEX), C.CString(name))
+	C.lua_setfield(L.s, C.int(LUA_GLOBALSINDEX), C.CString(name))
 }
 
 func SetMetaTable(L *State, index int) {

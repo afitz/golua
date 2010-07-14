@@ -9,9 +9,13 @@ CGO_CFLAGS=-I/usr/include/lua5.1
 CGO_LDFLAGS=_cgo_export.o -L/usr/lib/lua5.1 -L./ -llua5.1 -lgolua
 CGO_DEPS=libgolua.a _cgo_export.o
 CGOFILES=\
-	lua.go
+	lua.go \
+	lauxlib.go
+GOFILES=lua_defs.go
 
-CLEANFILES+=
+CLEANFILES+=lua_defs.go
+
+LUA_HEADER_FILES=/usr/include/lua5.1/lua.h /usr/include/lua5.1/lauxlib.h /usr/include/lua5.1/lualib.h
 
 include $(GOROOT)/src/Make.pkg
 
@@ -24,3 +28,8 @@ libgolua.a: golua.o
 
 golua.o: golua.c
 	gcc -I/usr/include/lua5.1 -c golua.c -o golua.o
+
+lua_defs.go:
+	echo "package lua\n" > lua_defs.go
+	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/const/' | sed 's/[A-Z_][A-Z_]*/& =/'  >> lua_defs.go
+	

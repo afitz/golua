@@ -12,7 +12,8 @@ static const char GoStateRegistryKey = 'k'; //golua registry key
 
 void clua_initstate(lua_State* L)
 {
-
+	/* create the GoLua.GoFunction metatable */
+	
 }
 
 unsigned int* clua_checkgofunction(lua_State* L, int index)

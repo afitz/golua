@@ -3,13 +3,21 @@ package main
 import "lua"
 import "fmt"
 
-func main() {
+func test(L *lua.State) int {
+	fmt.Println("hello world");
+	return 0;
+}
 
-	a := lua.GLOBALSINDEX;
-	fmt.Println(a);
+func main() {
 
 	var L *lua.State;
 
-	lua.PushNumber(L,1.0);
+	L = lua.NewState();
+	lua.OpenLibs(L);
 
+	lua.GetField(L, lua.LUA_GLOBALSINDEX, "print");
+	lua.PushString(L, "Hello World!");
+	lua.Call(L,1,0);
+
+	lua.Close(L);
 }
