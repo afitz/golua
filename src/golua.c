@@ -2,28 +2,67 @@
 #include <lauxlib.h>
 #include "_cgo_export.h"
 
+//metatables to register:
+//	GoLua.GoInterface
+//  GoLua.GoFunction
+//
+
+static const char GoStateRegistryKey = 'k'; //golua registry key
+
+
+void clua_initstate(lua_State* L)
+{
+
+}
+
+unsigned int* clua_checkgofunction(lua_State* L, int index)
+{
+	unsigned int* fid = (unsigned int*)luaL_checkudata(L,index,"GoLua.GoFunction");
+	luaL_argcheck(L, fid != NULL, index, "'GoFunction' expected");
+	return fid;
+}
+
+//wrapper for callgofunction
 int callback_function(lua_State* L)
 {
-	int fid = lua_tointeger(L, lua_upvalueindex(1));
+	unsigned int *fid = clua_checkgofunction(L,-1);
 	
-	//expecting that the global __GOLUA_STATE is a userdata filled with:
-	// and GoState* cast to int*, so the pointer to the userdata is int**
-	lua_getglobal(L, "___GOLUA_STATE");
-	int** goState = (int**)(lua_topointer(L,-1));
-	return golua_callgofunction(*goState,fid);
+	return golua_callgofunction(L,*fid);
+}
+
+unsigned int clua_togofunction(lua_State* L, int index)
+{
+	return *(clua_checkgofunction(L,index));
 }
 
 void clua_pushgofunction(lua_State* L, unsigned int fid)
 {
-	lua_pushinteger(L, fid);
-	lua_pushcclosure(L, &callback_function, 1);
+	unsigned int* fidptr = (unsigned int*)lua_newuserdata(L, sizeof(unsigned int));
+	*fidptr = fid;
+	luaL_getmetatable(L, "GoLua.GoFunction");
+	lua_setmetatable(L, -2);
 }
 
-void clua_setgostate(lua_State* L, int* gostate)
+
+void clua_setgostate(lua_State* L, GoInterface gi)
 {
-	int** gostateptr = (int**)lua_newuserdata(L,sizeof(int*));
-	*gostateptr = gostate;
-	lua_registerglobal(L,-1,"___GOLUA_STATE");  //TODO: special stack id?
+	lua_pushlightuserdata(L,(void*)&GoStateRegistryKey);
+	GoInterface* gip = (GoInterface*)lua_newuserdata(L,sizeof(GoInterface));
+	//copy interface value to userdata
+	gip->v = gi.v;
+	gip->t = gi.t;
+	//set into registry table
+	lua_settable(L,LUA_REGISTRYINDEX);
+	
+}
+
+GoInterface clua_getgostate(lua_State* L)
+{
+	//get gostate from registry entry
+	lua_pushlightuserdata(L,(void*)&GoStateRegistryKey);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	GoInterface* gip = lua_touserdata(L,-1);
+	return *gip;	
 }
 
 void clua_pushgointerface(lua_State* L, GoInterface gi)

@@ -1,8 +1,7 @@
 package lua
 
 //#include <lua.h>
-//void pushgofunction(lua_State*, unsigned int);
-//void test(void* test);
+//#include "golua.h"
 import "C"
 
 import "unsafe"
@@ -30,12 +29,24 @@ type Writer func(L *State, p []byte, ud interface{});
 type Reader func(L *State, data interface{}) []byte;
 
 //wrapper to keep cgo from complaining about incomplete ptr type
+//export State
 type State struct {
 	s *C.lua_State;
 	//funcs []GoFunction;
 	registry []interface{};
 	//todo add freelist for funcs indices, to allow for freeing
 	freeIndices []uint;
+}
+
+func newState(L *C.lua_State) *State {
+	var newstatei interface{}
+	newstate := &State{L, make([]interface{},8), make([]uint,8)};
+	newstatei = newstate;
+	ns1 := unsafe.Pointer(&newstatei);
+	ns2 := (*C.GoInterface)(ns1);
+	C.clua_setgostate(L,*ns2); //hacky....
+	C.clua_initstate(L)
+	return newstate;
 }
 
 func (L *State) addFreeIndex(i uint) {
@@ -91,10 +102,10 @@ func (L *State) unregister(fid uint) {
 type GoFunction func(*State) int;
 
 //export golua_callgofunction
-func callgofunction(L *C.lua_State, fid uint) int {
-	//TODO: f := L.registry[fid].(GoFunction);
-	//return f(L);
-	return 0;
+func golua_callgofunction(L *C.lua_State, fid uint) int {
+	L1 := interface{}((C.clua_getgostate(L))).(*State);
+	f := L1.registry[fid].(GoFunction);
+	return f(L1);
 }
 
 //export golua_callpanicfunction
@@ -105,7 +116,7 @@ func callpanicfunction(L *C.lua_State) int {
 
 func PushGoFunction(L *State, f GoFunction) {
 	fid := L.register(f);
-	C.pushgofunction(L.s,C.uint(fid));
+	C.clua_pushgofunction(L.s,C.uint(fid));
 }
 
 //TODO:
@@ -120,12 +131,7 @@ func PushLightUserdata(L *State, ud *interface{}) {
 //push pointer as full userdata - mem is go owned, but we 
 //make a guarantee that lifetime will outlast lua lifetime
 func PushUserdata(L *State, ud interface{}) {
-	_,addr := unsafe.Reflect(ud);
-	C.test(addr);
-	_,ok := ud.(uintptr);
-	if ok {
 
-	}
 }
 
 //TODO:
@@ -248,6 +254,8 @@ func Load(L *State, reader Reader, data interface{}, chunkname string) int {
 func NewState(f Alloc, ud interface{}) *State {
 	//TODO: implement a newState function which will initialize a State
 	//		call with result from C.lua_newstate for the s initializer
+	//ls := lua_newstate(
+	
 	return &State{};
 }
 
@@ -257,6 +265,7 @@ func NewTable(L *State) {
 
 func NewThread(L* State) *State {
 	//TODO: call newState with result from C.lua_newthread and return it
+	//TODO: 
 	s := C.lua_newthread(L.s);
 	return &State{s,nil,nil};
 }
@@ -385,9 +394,9 @@ func ToBoolean(L *State, index int) bool {
 	return C.lua_toboolean(L.s, C.int(index)) != 0;
 }
 
-func ToGoFunction(L *State, index int) (f GoFunction, fid uint) {
-	//TODO: get c function, check upvalue for fid and gofunctionflag
-	return *(new(GoFunction)), 0;
+func ToGoFunction(L *State, index int) (f GoFunction) {
+	fid := C.clua_togofunction(L.s,C.int(index))
+	return L.registry[fid].(GoFunction);
 }
 
 func ToString(L *State, index int) string {
