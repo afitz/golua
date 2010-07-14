@@ -10,11 +10,6 @@
 static const char GoStateRegistryKey = 'k'; //golua registry key
 
 
-void clua_initstate(lua_State* L)
-{
-	/* create the GoLua.GoFunction metatable */
-	
-}
 
 unsigned int* clua_checkgofunction(lua_State* L, int index)
 {
@@ -23,12 +18,35 @@ unsigned int* clua_checkgofunction(lua_State* L, int index)
 	return fid;
 }
 
+GoInterface* clua_getgostate(lua_State* L)
+{
+	//get gostate from registry entry
+	lua_pushlightuserdata(L,(void*)&GoStateRegistryKey);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	GoInterface* gip = lua_touserdata(L,-1);
+	return gip;	
+}
+
+
 //wrapper for callgofunction
 int callback_function(lua_State* L)
 {
 	unsigned int *fid = clua_checkgofunction(L,-1);
-	
-	return golua_callgofunction(L,*fid);
+	GoInterface* gi = clua_getgostate(L);
+	return golua_callgofunction(*gi,*fid);
+}
+
+//wrapper for gchook
+int gchook_wrapper(lua_State* L) 
+{
+	unsigned int* fid = clua_checkgofunction(L,-1); //TODO: this will error
+	GoInterface* gi = clua_getgostate(L);
+	if(fid != NULL)
+		return golua_gchook(*gi,*fid);
+
+	//TODO: try udata or whatever, after impl
+
+	return 0;
 }
 
 unsigned int clua_togofunction(lua_State* L, int index)
@@ -57,14 +75,6 @@ void clua_setgostate(lua_State* L, GoInterface gi)
 	
 }
 
-GoInterface clua_getgostate(lua_State* L)
-{
-	//get gostate from registry entry
-	lua_pushlightuserdata(L,(void*)&GoStateRegistryKey);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	GoInterface* gip = lua_touserdata(L,-1);
-	return *gip;	
-}
 
 void clua_pushgointerface(lua_State* L, GoInterface gi)
 {
@@ -74,3 +84,22 @@ void clua_pushgointerface(lua_State* L, GoInterface gi)
 	luaL_getmetatable(L, "GoLua.GoInterface");
 	lua_setmetatable(L,-2);
 }
+
+void clua_initstate(lua_State* L)
+{
+	/* create the GoLua.GoFunction metatable */
+	luaL_newmetatable(L,"GoLua.GoFunction");
+	//pushkey
+	lua_pushliteral(L,"__call");
+	//push value
+	lua_pushcfunction(L,&callback_function);
+	//t[__call] = &callback_function
+	lua_settable(L,-3);
+	//push key
+	lua_pushliteral(L,"__gc");
+	//pushvalue
+	lua_pushcfunction(L,&gchook_wrapper);
+	lua_settable(L,-3);
+	lua_pop(L,1);
+}
+

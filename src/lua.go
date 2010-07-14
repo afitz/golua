@@ -5,6 +5,8 @@ package lua
 import "C"
 
 import "unsafe"
+//TODO: remove
+import "fmt"
 
 //like lua_Writer, but as p will contain capacity, not needed as separate param
 type Writer func(L *State, p []byte, ud interface{});
@@ -24,7 +26,7 @@ type State struct {
 
 func newState(L *C.lua_State) *State {
 	var newstatei interface{}
-	newstate := &State{L, make([]interface{},8), make([]uint,8)};
+	newstate := &State{L, make([]interface{},0,8), make([]uint,0,8)};
 	newstatei = newstate;
 	ns1 := unsafe.Pointer(&newstatei);
 	ns2 := (*C.GoInterface)(ns1);
@@ -37,7 +39,7 @@ func (L *State) addFreeIndex(i uint) {
 	freelen := len(L.freeIndices)
 	//reallocate if necessary
 	if freelen+1 > cap(L.freeIndices) {
-		newSlice := make([]uint, cap(L.freeIndices)*2);
+		newSlice := make([]uint, freelen, cap(L.freeIndices)*2);
 		copy(newSlice, L.freeIndices);
 		L.freeIndices = newSlice;
 	}
@@ -65,7 +67,7 @@ func (L *State) register(f interface{}) uint {
 		index = uint(len(L.registry));
 		//reallocate backing array if necessary
 		if index+1 > uint(cap(L.registry)) {
-			newSlice := make([]interface{},cap(L.registry)*2);
+			newSlice := make([]interface{},index,cap(L.registry)*2);
 			copy(newSlice, L.registry);
 			L.registry = newSlice;
 		}
@@ -86,10 +88,18 @@ func (L *State) unregister(fid uint) {
 type GoFunction func(*State) int;
 
 //export golua_callgofunction
-func golua_callgofunction(L *C.lua_State, fid uint) int {
-	L1 := interface{}((C.clua_getgostate(L))).(*State);
+func golua_callgofunction(L interface{}, fid uint) int {
+	L1 := L.(*State);
 	f := L1.registry[fid].(GoFunction);
 	return f(L1);
+}
+
+//export golua_gchook
+func golua_gchook(L interface{}, id uint) int {
+	L1 := L.(*State);
+	L1.unregister(id);
+	fmt.Printf("GC id: %d\n",id);
+	return 0;
 }
 
 //export golua_callpanicfunction
