@@ -8,7 +8,7 @@
 //
 
 static const char GoStateRegistryKey = 'k'; //golua registry key
-
+static const char PanicFIDRegistryKey = 'k';
 
 
 unsigned int* clua_checkgofunction(lua_State* L, int index)
@@ -24,6 +24,7 @@ GoInterface* clua_getgostate(lua_State* L)
 	lua_pushlightuserdata(L,(void*)&GoStateRegistryKey);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 	GoInterface* gip = lua_touserdata(L,-1);
+	lua_pop(L,1);
 	return gip;	
 }
 
@@ -103,3 +104,50 @@ void clua_initstate(lua_State* L)
 	lua_pop(L,1);
 }
 
+
+int callback_panicf(lua_State* L)
+{
+	lua_pushlightuserdata(L,(void*)&PanicFIDRegistryKey);
+	lua_gettable(L,LUA_REGISTRYINDEX);
+	unsigned int fid = lua_tointeger(L,-1);
+	lua_pop(L,1);
+	GoInterface* gi = clua_getgostate(L);
+	return golua_callpanicfunction(*gi,fid);
+
+}
+
+GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
+{
+	//get old panicfid
+	unsigned int old_id;
+	lua_pushlightuserdata(L, (void*)&PanicFIDRegistryKey);
+	lua_gettable(L,LUA_REGISTRYINDEX);
+	if(lua_isnil(L,-1) == 0)
+		old_id = lua_tointeger(L,-1);
+	lua_pop(L,1);
+
+	//set registry key for function id of go panic function
+	lua_pushlightuserdata(L,(void*)&PanicFIDRegistryKey);
+	//push id value
+	lua_pushinteger(L,panicf_id);
+	//set into registry table
+	lua_settable(L,LUA_REGISTRYINDEX);
+
+	//now set the panic function
+	lua_CFunction pf = lua_atpanic(L,&callback_panicf);
+
+	//make a GoInterface with a wrapped C panicf or the original go panicf
+	if(pf == &callback_panicf)
+	{
+		return golua_idtointerface(old_id);
+	}
+	else
+	{
+		return golua_cfunctiontointerface(pf);
+	}
+}
+
+int clua_callluacfunc(lua_State* L, lua_CFunction f)
+{
+	return f(L);
+}

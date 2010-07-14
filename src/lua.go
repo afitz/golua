@@ -103,8 +103,20 @@ func golua_gchook(L interface{}, id uint) int {
 }
 
 //export golua_callpanicfunction
-func callpanicfunction(L *C.lua_State) int {
-	return 0;
+func callpanicfunction(L interface{}, id uint) int {
+	L1 := L.(*State);
+	f := L1.registry[id].(GoFunction);
+	return f(L1);
+}
+
+//export golua_idtointerface
+func idtointerface(id uint) interface{} {
+	return id;
+}
+
+//export golua_cfunctiontointerface
+func cfunctiontointerface(f C.lua_CFunction) interface{} {
+	return f;
 }
 
 
@@ -138,10 +150,22 @@ func NewUserdata(L* State, size uintptr) uintptr {
 type Alloc func(ud interface{}, ptr interface{}, osize uint, nsize uint) uintptr;
 
 func AtPanic(L *State, panicf GoFunction) (oldpanicf GoFunction) {
+	fid := L.register(panicf);
+	oldres := interface{}(C.clua_atpanic(L.s,C.uint(fid)));
+	switch i := oldres.(type) {
+	case C.uint:
+		f := L.registry[uint(i)].(GoFunction);
+		//free registry entry
+		L.unregister(uint(i));
+		return f;
+	case C.lua_CFunction:
+		return func(L1 *State) int {
+			return int(C.clua_callluacfunc(L1.s,i));
+		}
+	default:
+	}
+	//TODO: error here... we only call this from one place with these two types
 	return *(new(GoFunction));
-	//TODO: call lua_atpanic with c-wrapped panicf (may require field in State)
-	//		check return of lua_atpanic to see if it is go or c function,
-	//		if c, wrap as go.  if go, unwrap c portion
 }
 
 
