@@ -4,9 +4,11 @@
 
 include $(GOROOT)/src/Make.$(GOARCH)
 
-ifndef TARG
-TARG=github.com/afitz/golua/lua5.1
-endif
+#ifndef TARG
+#TARG=github.com/afitz/golua/lua5.1
+#endif
+
+TARG=lua51
 
 CGO_CFLAGS=-I/usr/include/lua5.1
 CGO_LDFLAGS=_cgo_export.o -L/usr/lib/lua5.1 -L./ -llua5.1 -lgolua
