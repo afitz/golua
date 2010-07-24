@@ -1,1 +1,7 @@
 Go Bindings for the lua C API
+
+Simplest way to install:
+
+#goinstall -u github.com/afitz/golua
+#cd $GOROOT/src/pkg/github.com/afitz/golua
+#make install
