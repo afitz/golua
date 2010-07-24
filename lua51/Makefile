@@ -54,6 +54,6 @@ golua.o: golua.c
 	gcc -I/usr/include/lua5.1 -c golua.c -o golua.o
 
 lua_defs.go:
-	echo "package lua51\n" > lua_defs.go
+	echo "package lua51;" > lua_defs.go
 	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/const/' | sed 's/[A-Z_][A-Z_]*/& =/'  >> lua_defs.go
 	
