@@ -8,21 +8,29 @@ include $(GOROOT)/src/Make.$(GOARCH)
 #TARG=github.com/afitz/golua/lua5.1
 #endif
 
+CGO_CFLAGS+=
+CGO_LDFLAGS+=_cgo_export.o -L./ -lgolua
+
+ifndef LUA51_LIBNAME
+LUA51_LIBNAME=lua5.1
+endif
 
 ifndef LUA51_INCLUDE_DIR
-CGO_CFLAGS+=`pkg-config --cflags lua5.1`
+CGO_CFLAGS+=`pkg-config --cflags $(LUA51_LIBNAME)`
 else
-CGO_CFLAGS+=-I$(LUA51)
+CGO_CFLAGS+=-I$(LUA51_INCLUDE_DIR)
 endif
 
 ifndef LUA51_LIB_DIR
-CGO_LDFLAGS+=`pkg-config --libs`
+CGO_LDFLAGS+=`pkg-config --libs $(LUA51_LIBNAME)`
+else
+CGO_LDFLAGS+=-L$(LUA51_LIB_DIR) -l$(LUA51_LIBNAME)
 endif
 
 TARG=lua51
 
-CGO_CFLAGS+=-I/usr/include/lua5.1
-CGO_LDFLAGS=_cgo_export.o -L/usr/lib/lua5.1 -L./ -llua5.1 -lgolua
+#CGO_CFLAGS+=-I/usr/include/lua5.1
+#CGO_LDFLAGS+=_cgo_export.o -L/usr/lib/lua5.1 -L./ -llua5.1 -lgolua
 CGO_DEPS=libgolua.a _cgo_export.o
 CGOFILES=\
 	lua.go \
