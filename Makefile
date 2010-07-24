@@ -1,16 +1,16 @@
 
-all: src/_obj/lua.a examples
+all: lua5.1/_obj/lua5.1.a examples
 
-src/_obj/lua.a:
-	cd src && make
+lua5.1/_obj/lua5.1.a:
+	cd lua5.1 && make
 
-examples:
+examples: install
 	cd example && make
 
 clean:
 	cd example && make clean
-	cd src && make clean
+	cd lua5.1 && make clean
 
 install:
-	cd src && make install
+	cd lua5.1 && make install 
 	

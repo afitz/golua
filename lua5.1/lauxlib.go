@@ -1,4 +1,4 @@
-package lua
+package lua51
 
 //#include <lua.h>
 //#include <lauxlib.h>

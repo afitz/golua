@@ -1,33 +1,33 @@
 package main
 
-import "lua"
+import lua51 "github.com/afitz/golua/lua5.1"
 import "fmt"
 
-func test(L *lua.State) int {
+func test(L *lua51.State) int {
 	fmt.Println("hello world! from go!");
 	return 0;
 }
 
 func main() {
 
-	var L *lua.State;
+	var L *lua51.State;
 
-	L = lua.NewState();
-	lua.OpenLibs(L);
+	L = lua51.NewState();
+	lua51.OpenLibs(L);
 
-	lua.GetField(L, lua.LUA_GLOBALSINDEX, "print");
-	lua.PushString(L, "Hello World!");
-	lua.Call(L,1,0);
+	lua51.GetField(L, lua51.LUA_GLOBALSINDEX, "print");
+	lua51.PushString(L, "Hello World!");
+	lua51.Call(L,1,0);
 
-	lua.PushGoFunction(L, test);
-	lua.PushGoFunction(L, test);
-	lua.PushGoFunction(L, test);
-	lua.PushGoFunction(L, test);
+	lua51.PushGoFunction(L, test);
+	lua51.PushGoFunction(L, test);
+	lua51.PushGoFunction(L, test);
+	lua51.PushGoFunction(L, test);
 
 
-	lua.Call(L,0,0);
-	lua.Call(L,0,0);
-	lua.Call(L,0,0);
+	lua51.Call(L,0,0);
+	lua51.Call(L,0,0);
+	lua51.Call(L,0,0);
 
-	lua.Close(L);
+	lua51.Close(L);
 }

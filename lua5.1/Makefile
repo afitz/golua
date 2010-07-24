@@ -1,35 +1,26 @@
-# Copyright 2009 The Go Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file.
 
 include $(GOROOT)/src/Make.$(GOARCH)
 
-TARG=lua
-CGO_CFLAGS=-I/usr/include/lua5.1
-CGO_LDFLAGS=_cgo_export.o -L/usr/lib/lua5.1 -L./ -llua5.1 -lgolua
-CGO_DEPS=libgolua.a _cgo_export.o
-CGOFILES=\
-	lua.go \
-	lauxlib.go
-GOFILES=lua_defs.go
+GOTPATH=$(GOROOT)/pkg/$(GOOS)_$(GOARCH)
 
-CLEANFILES+=lua_defs.go
+OLDNAME=$(GOTPATH)/cgo_github.com_afitz_golua_lua5.1.so
+NEWNAME=$(GOTPATH)/cgo_github.com_afitz_golua_lua51.so
 
-LUA_HEADER_FILES=/usr/include/lua5.1/lua.h /usr/include/lua5.1/lauxlib.h /usr/include/lua5.1/lualib.h
+all:
+	make -f Make.lua all
 
-include $(GOROOT)/src/Make.pkg
+clean:
+	make -f Make.lua clean
 
-%: install %.go
-	$(QUOTED_GOBIN)/$(GC) $*.go
-	$(QUOTED_GOBIN)/$(LD) -o $@ $*.$O
+install: $(NEWNAME)
 
-libgolua.a: golua.o
-	ar rcs libgolua.a golua.o
+$(NEWNAME): $(OLDNAME)
+	cp $(GOTPATH)/cgo_github.com_afitz_golua_lua5.1.so $(GOTPATH)/cgo_github.com_afitz_golua_lua51.so
 
-golua.o: golua.c
-	gcc -I/usr/include/lua5.1 -c golua.c -o golua.o
+$(OLDNAME): *.c *.go
+	make -f Make.lua install
 
-lua_defs.go:
-	echo "package lua\n" > lua_defs.go
-	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/const/' | sed 's/[A-Z_][A-Z_]*/& =/'  >> lua_defs.go
-	
+uninstall:
+	rm -f $(GOTPATH)/cgo_github.com_afitz_golua_lua51.so
+	make -f Make.lua uninstall
+
