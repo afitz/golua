@@ -17,6 +17,7 @@ endif
 
 ifndef LUA51_INCLUDE_DIR
 CGO_CFLAGS+=`pkg-config --cflags $(LUA51_LIBNAME)`
+LUA51_INCLUDE_DIR:=$(shell pkg-config --cflags-only-I $(LUA51_LIBNAME) | sed 's/-I//' | sed 's/[ 	]*$$//')
 else
 CGO_CFLAGS+=-I$(LUA51_INCLUDE_DIR)
 endif
@@ -39,7 +40,8 @@ GOFILES=lua_defs.go
 
 CLEANFILES+=lua_defs.go
 
-LUA_HEADER_FILES=/usr/include/lua5.1/lua.h /usr/include/lua5.1/lauxlib.h /usr/include/lua5.1/lualib.h
+LUA_HEADERS=lua.h lauxlib.h lualib.h
+LUA_HEADER_FILES:=$(patsubst %,$(LUA51_INCLUDE_DIR)/%,$(LUA_HEADERS))
 
 include $(GOROOT)/src/Make.pkg
 
@@ -51,7 +53,7 @@ libgolua.a: golua.o
 	ar rcs libgolua.a golua.o
 
 golua.o: golua.c
-	gcc -I/usr/include/lua5.1 -c golua.c -o golua.o
+	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -c golua.c -o golua.o
 
 lua_defs.go:
 	echo "package lua51;" > lua_defs.go

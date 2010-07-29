@@ -428,7 +428,8 @@ func ToGoFunction(L *State, index int) (f GoFunction) {
 
 func ToString(L *State, index int) string {
 	var size C.size_t;
-	return C.GoString(C.lua_tolstring(L.s, C.int(index), &size));
+	//C.GoString(C.lua_tolstring(L.s, C.int(index), &size));
+	return C.GoString(C.lua_tolstring(L.s,C.int(index),&size));
 }
 
 func ToInteger(L *State, index int) int {
