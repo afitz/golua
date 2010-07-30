@@ -53,7 +53,7 @@ libgolua.a: golua.o
 	ar rcs libgolua.a golua.o
 
 golua.o: golua.c
-	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -c golua.c -o golua.o
+	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -fPIC -O2 -c golua.c -o golua.o
 
 lua_defs.go:
 	echo "package lua51;" > lua_defs.go
