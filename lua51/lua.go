@@ -145,8 +145,8 @@ func PushUserdata(L *State, ud interface{}) {
 
 //TODO:
 //old style
-func NewUserdata(L* State, size uintptr) uintptr {
-	return 0;
+func NewUserdata(L* State, size uintptr) unsafe.Pointer {
+	return unsafe.Pointer(C.lua_newuserdata(L.s, C.size_t(size)));
 }
 
 
@@ -235,7 +235,7 @@ func IsBoolean(L *State, index int) bool {
 }
 
 func IsGoFunction(L *State, index int) bool {
-	//TODO: add a check if c function to distinguish c function from go function
+	//TODO:go function is now a userdatum, not a c function, so this will not work 
 	return C.lua_iscfunction(L.s, C.int(index)) == 1
 }
 
@@ -289,6 +289,7 @@ func NewStateAlloc(f Alloc, ud interface{}) *State {
 func NewTable(L *State) {
 	C.lua_createtable(L.s,0,0);
 }
+
 
 func NewThread(L* State) *State {
 	//TODO: call newState with result from C.lua_newthread and return it
@@ -449,9 +450,8 @@ func ToThread(L *State, index int) *State {
 	return &State{}
 }
 
-func ToUserdata(L *State, index int) interface{} {
-	//TODO: needs userdata implementation first...
-	return 0;
+func ToUserdata(L *State, index int) unsafe.Pointer {
+	return unsafe.Pointer(C.lua_touserdata(L.s,C.int(index)));
 }
 
 func Type(L *State, index int) int {

@@ -1,7 +1,7 @@
 
 include $(GOROOT)/src/Make.$(GOARCH)
 
-all: basic panic
+all: basic panic userdata
 
 basic: basic.8
 	$(LD) -o basic basic.8
@@ -14,6 +14,12 @@ panic: panic.8
 
 panic.8: panic.go
 	$(GC) -o panic.8 panic.go
+
+userdata: userdata.8
+	$(LD) -o userdata userdata.8
+
+userdata.8: userdata.go
+	$(GC) -o userdata.8 userdata.go
 
 clean:
 	-rm -f basic panic *.8
