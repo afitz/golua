@@ -23,7 +23,7 @@ type State struct {
 	s *C.lua_State;
 	//funcs []GoFunction;
 	registry []interface{};
-	//todo add freelist for funcs indices, to allow for freeing
+	//freelist for funcs indices, to allow for freeing
 	freeIndices []uint;
 }
 
@@ -128,29 +128,35 @@ func PushGoFunction(L *State, f GoFunction) {
 	C.clua_pushgofunction(L.s,C.uint(fid));
 }
 
-//TODO:
+
 //push pointer by value, as a value - we don't impact lifetime
 func PushLightUserdata(L *State, ud *interface{}) {
 	//push
 	C.lua_pushlightuserdata(L.s,unsafe.Pointer(ud));
 
 }
-
+/*
 //TODO:
 //push pointer as full userdata - mem is go owned, but we 
 //make a guarantee that lifetime will outlast lua lifetime
 func PushUserdata(L *State, ud interface{}) {
 
 }
+*/
 
-//TODO:
 //old style
 func NewUserdata(L* State, size uintptr) unsafe.Pointer {
 	return unsafe.Pointer(C.lua_newuserdata(L.s, C.size_t(size)));
 }
 
 
-type Alloc func(ud interface{}, ptr interface{}, osize uint, nsize uint) uintptr;
+type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer;
+
+//export golua_callallocf
+func callAllocf(fp unsafe.Pointer,	ptr unsafe.Pointer,
+			    osize uint,			nsize uint) unsafe.Pointer {
+	return (*((*Alloc)(fp)))(ptr,osize,nsize);
+}
 
 func AtPanic(L *State, panicf GoFunction) (oldpanicf GoFunction) {
 	fid := L.register(panicf);
@@ -278,12 +284,13 @@ func Load(L *State, reader Reader, data interface{}, chunkname string) int {
 
 //NOTE: lua_newstate becomes NewStateAlloc whereas
 //		luaL_newstate becomes NewState
-func NewStateAlloc(f Alloc, ud interface{}) *State {
+func NewStateAlloc(f Alloc) *State {
 	//TODO: implement a newState function which will initialize a State
 	//		call with result from C.lua_newstate for the s initializer
 	//ls := lua_newstate(
-	
-	return &State{};
+	ls := C.clua_newstate(unsafe.Pointer(&f));
+	//ls := clua_newstate(
+	return newState(ls);
 }
 
 func NewTable(L *State) {
@@ -293,7 +300,8 @@ func NewTable(L *State) {
 
 func NewThread(L* State) *State {
 	//TODO: call newState with result from C.lua_newthread and return it
-	//TODO: 
+	//TODO: should have same lists as parent
+	//		but may complicate gc
 	s := C.lua_newthread(L.s);
 	return &State{s,nil,nil};
 }

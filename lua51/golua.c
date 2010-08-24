@@ -151,3 +151,13 @@ int clua_callluacfunc(lua_State* L, lua_CFunction f)
 {
 	return f(L);
 }
+
+void* allocwrapper(void* ud, void *ptr, size_t osize, size_t nsize)
+{
+	golua_callallocf(ud,ptr,osize,nsize);
+}
+
+lua_State* clua_newstate(void* goallocf)
+{
+	return lua_newstate(&allocwrapper,goallocf);
+}
