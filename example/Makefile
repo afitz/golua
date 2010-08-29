@@ -1,5 +1,5 @@
 
-include $(GOROOT)/src/Make.$(GOARCH)
+include $(GOROOT)/src/Make.inc
 
 all: basic panic userdata alloc
 
