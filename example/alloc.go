@@ -27,12 +27,18 @@ func AllocatorF(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer {
 }
 
 
+func A2(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer {
+	return AllocatorF(ptr,osize,nsize);
+}
+
 func main() {
 
 	refHolder = make([][]byte,0,500);
 
 	L := lua.NewStateAlloc(AllocatorF);
 	lua.OpenLibs(L);
+
+	lua.SetAllocf(L,A2);
 
 	for i:=0; i < 10; i++ {
 		lua.GetField(L, lua.LUA_GLOBALSINDEX, "print");

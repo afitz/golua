@@ -394,8 +394,8 @@ func Resume(L *State, narg int) int {
 	return int(C.lua_resume(L.s, C.int(narg)));
 }
 
-func SetAllocf(L *State, f Alloc, ud interface{}) {
-	//TODO:
+func SetAllocf(L *State, f Alloc) {
+	C.clua_setallocf(L.s,unsafe.Pointer(&f));
 }
 
 func SetfEnv(L *State, index int) {

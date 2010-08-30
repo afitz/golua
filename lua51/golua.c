@@ -161,3 +161,8 @@ lua_State* clua_newstate(void* goallocf)
 {
 	return lua_newstate(&allocwrapper,goallocf);
 }
+
+void clua_setallocf(lua_State* L, void* goallocf)
+{
+	lua_setallocf(L,&allocwrapper,goallocf);
+}
