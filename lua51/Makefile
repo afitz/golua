@@ -4,12 +4,9 @@
 
 include $(GOROOT)/src/Make.inc	
 
-#ifndef TARG
-#TARG=github.com/afitz/golua/lua5.1
-#endif
-
 CGO_CFLAGS+=
-CGO_LDFLAGS+=_cgo_export.o -L./ -lgolua
+CGO_DEPS=golua.o _cgo_export.o
+CGO_LDFLAGS+=golua.o _cgo_export.o #-L./ -lgolua
 
 ifndef LUA51_LIBNAME
 LUA51_LIBNAME=lua5.1
@@ -30,9 +27,6 @@ endif
 
 TARG=lua51
 
-#CGO_CFLAGS+=-I/usr/include/lua5.1
-#CGO_LDFLAGS+=_cgo_export.o -L/usr/lib/lua5.1 -L./ -llua5.1 -lgolua
-CGO_DEPS=libgolua.a _cgo_export.o
 CGOFILES=\
 	lua.go \
 	lauxlib.go
@@ -49,11 +43,8 @@ include $(GOROOT)/src/Make.pkg
 	$(QUOTED_GOBIN)/$(GC) $*.go
 	$(QUOTED_GOBIN)/$(LD) -o $@ $*.$O
 
-libgolua.a: golua.o
-	ar rcs libgolua.a golua.o
-
 golua.o: golua.c
-	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -fPIC -O2 -c golua.c -o golua.o
+	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -fPIC $(CFLAGS) -c golua.c -o golua.o
 
 lua_defs.go:
 	echo "package lua51;" > lua_defs.go

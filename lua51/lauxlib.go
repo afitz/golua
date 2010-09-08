@@ -5,7 +5,7 @@ package lua51
 //#include <lualib.h>
 //#include "golua.h"
 import "C"
-
+import "unsafe"
 //luaL_addchar
 //luaL_addlstring
 //luaL_addsize
@@ -55,10 +55,8 @@ func CheckOption(L *State, narg int, def string, lst []string) int {
 func CheckType(L *State, narg int, t int) {
 	C.luaL_checktype(L.s,C.int(narg),C.int(t));
 }
-
-//TODO: ensure correspondence w/ Newuserdata
-func CheckUdata(L *State, narg int, tname string) uintptr {
-	return uintptr(C.luaL_checkudata(L.s,C.int(narg),C.CString(tname)));
+func CheckUdata(L *State, narg int, tname string) unsafe.Pointer {
+	return unsafe.Pointer(C.luaL_checkudata(L.s,C.int(narg),C.CString(tname)));
 }
 
 //true if no errors, false otherwise
