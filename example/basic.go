@@ -9,7 +9,6 @@ func test(L *lua51.State) int {
 }
 
 func main() {
-
 	var L *lua51.State;
 
 	L = lua51.NewState();
