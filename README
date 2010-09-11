@@ -5,3 +5,20 @@ Simplest way to install:
 #goinstall -u github.com/afitz/golua
 #cd $GOROOT/src/pkg/github.com/afitz/golua
 #make install
+
+
+Configuration Variables
+-----------------------
+LUA51_LIBNAME
+default: lua5.1
+used if LUA51_LIB_DIR is defined
+
+LUA51_INCLUDE_DIR
+default: undefined
+defining this overrides the pkg-config mechanism to find the lua cflags
+
+LUA51_LIB_DIR
+default: undefined
+defining this overrides the pkg-config mechanism to create the LD_FLAGS
+
+
