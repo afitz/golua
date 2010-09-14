@@ -118,7 +118,7 @@ func idtointerface(id uint) interface{} {
 }
 
 //export golua_cfunctiontointerface
-func cfunctiontointerface(f C.lua_CFunction) interface{} {
+func cfunctiontointerface(f *uintptr) interface{} {
 	return f;
 }
 
@@ -151,11 +151,10 @@ func NewUserdata(L* State, size uintptr) unsafe.Pointer {
 
 
 type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer;
-
 //export golua_callallocf
-func callAllocf(fp unsafe.Pointer,	ptr unsafe.Pointer,
-			    osize uint,			nsize uint) unsafe.Pointer {
-	return (*((*Alloc)(fp)))(ptr,osize,nsize);
+func callAllocf(fp uintptr,	ptr uintptr,
+			    osize uint,			nsize uint) uintptr {
+	return uintptr((*((*Alloc)(unsafe.Pointer(fp))))(unsafe.Pointer(ptr),osize,nsize));
 }
 
 func AtPanic(L *State, panicf GoFunction) (oldpanicf GoFunction) {
