@@ -14,6 +14,13 @@ int clua_callluacfunc(lua_State* L, lua_CFunction f);
 lua_State* clua_newstate(void* goallocf);
 void clua_setallocf(lua_State* L, void* goallocf);
 
+void clua_openbase(lua_State* L);
+void clua_openio(lua_State* L);
+void clua_openmath(lua_State* L);
+void clua_openpackage(lua_State* L);
+void clua_openstring(lua_State* L);
+void clua_opentable(lua_State* L);
+
 
 //TODO: get/set panicf
 //TODO: get/set allocf

@@ -477,5 +477,30 @@ func Yield(L *State, nresults int) int {
 	return int(C.lua_yield(L.s, C.int(nresults)));
 }
 
+// Restricted library opens
+
+func OpenBase(L *State) {
+        C.clua_openbase(L.s);
+}
+
+func OpenIO(L *State) {
+        C.clua_openio(L.s);
+}
+
+func OpenMath(L *State) {
+        C.clua_openmath(L.s);
+}
+
+func OpenPackage(L *State) {
+        C.clua_openpackage(L.s);
+}
+
+func OpenString(L *State) {
+        C.clua_openstring(L.s);
+}
+
+func OpenTable(L *State) {
+        C.clua_opentable(L.s);
+}
 
 
