@@ -1,5 +1,6 @@
 #include <lua.h>
 #include <lauxlib.h>
+#include <lualib.h>
 #include "_cgo_export.h"
 
 //metatables to register:
@@ -165,4 +166,34 @@ lua_State* clua_newstate(void* goallocf)
 void clua_setallocf(lua_State* L, void* goallocf)
 {
 	lua_setallocf(L,&allocwrapper,goallocf);
+}
+
+void clua_openbase(lua_State* L){
+	lua_pushcfunction(L,&luaopen_base);
+	lua_call(L, 0, 0);
+}
+
+void clua_openio(lua_State* L){
+	lua_pushcfunction(L,&luaopen_io);
+	lua_call(L, 0, 0);
+}
+
+void clua_openmath(lua_State* L){
+	lua_pushcfunction(L,&luaopen_math);
+	lua_call(L, 0, 0);
+}
+
+void clua_openpackage(lua_State* L){
+	lua_pushcfunction(L,&luaopen_package);
+	lua_call(L, 0, 0);
+}
+
+void clua_openstring(lua_State* L){
+	lua_pushcfunction(L,&luaopen_string);
+	lua_call(L, 0, 0);
+}
+
+void clua_opentable(lua_State* L){
+	lua_pushcfunction(L,&luaopen_table);
+	lua_call(L, 0, 0);
 }
