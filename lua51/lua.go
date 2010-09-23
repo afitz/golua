@@ -503,4 +503,6 @@ func OpenTable(L *State) {
         C.clua_opentable(L.s);
 }
 
-
+func OpenOS(L *State) {
+        C.clua_openos(L.s);
+}

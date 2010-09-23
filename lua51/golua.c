@@ -170,30 +170,42 @@ void clua_setallocf(lua_State* L, void* goallocf)
 
 void clua_openbase(lua_State* L){
 	lua_pushcfunction(L,&luaopen_base);
-	lua_call(L, 0, 0);
+	lua_pushstring(L,"");
+	lua_call(L, 1, 0);
 }
 
 void clua_openio(lua_State* L){
 	lua_pushcfunction(L,&luaopen_io);
-	lua_call(L, 0, 0);
+	lua_pushstring(L,"io");
+	lua_call(L, 1, 0);
 }
 
 void clua_openmath(lua_State* L){
 	lua_pushcfunction(L,&luaopen_math);
-	lua_call(L, 0, 0);
+	lua_pushstring(L,"math");
+	lua_call(L, 1, 0);
 }
 
 void clua_openpackage(lua_State* L){
 	lua_pushcfunction(L,&luaopen_package);
-	lua_call(L, 0, 0);
+	lua_pushstring(L,"package");
+	lua_call(L, 1, 0);
 }
 
 void clua_openstring(lua_State* L){
 	lua_pushcfunction(L,&luaopen_string);
-	lua_call(L, 0, 0);
+	lua_pushstring(L,"string");
+	lua_call(L, 1, 0);
 }
 
 void clua_opentable(lua_State* L){
 	lua_pushcfunction(L,&luaopen_table);
-	lua_call(L, 0, 0);
+	lua_pushstring(L,"table");
+	lua_call(L, 1, 0);
+}
+
+void clua_openos(lua_State* L){
+	lua_pushcfunction(L,&luaopen_os);
+	lua_pushstring(L,"os");
+	lua_call(L, 1, 0);
 }

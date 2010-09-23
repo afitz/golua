@@ -19,5 +19,6 @@ void clua_openmath(lua_State* L);
 void clua_openpackage(lua_State* L);
 void clua_openstring(lua_State* L);
 void clua_opentable(lua_State* L);
+void clua_openos(lua_State* L);
 
 
