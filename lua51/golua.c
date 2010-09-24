@@ -33,7 +33,7 @@ GoInterface* clua_getgostate(lua_State* L)
 //wrapper for callgofunction
 int callback_function(lua_State* L)
 {
-	unsigned int *fid = clua_checkgofunction(L,-1);
+	unsigned int *fid = clua_checkgofunction(L,1);
 	GoInterface* gi = clua_getgostate(L);
 	return golua_callgofunction(*gi,*fid);
 }
