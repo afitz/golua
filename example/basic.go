@@ -8,6 +8,16 @@ func test(L *lua51.State) int {
 	return 0;
 }
 
+func test2(L *lua51.State) int {
+	arg := lua51.CheckInteger(L,-1);
+	argfrombottom := lua51.CheckInteger(L,1);
+	fmt.Print("test2 arg: ");
+	fmt.Println(arg);
+	fmt.Print("from bottom: ");
+	fmt.Println(argfrombottom);
+	return 0;
+}
+
 func main() {
 	var L *lua51.State;
 
@@ -22,6 +32,10 @@ func main() {
 	lua51.PushGoFunction(L, test);
 	lua51.PushGoFunction(L, test);
 	lua51.PushGoFunction(L, test);
+
+	lua51.PushGoFunction(L, test2);
+	lua51.PushInteger(L,42);
+	lua51.Call(L,1,0);
 
 
 	lua51.Call(L,0,0);

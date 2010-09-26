@@ -35,6 +35,8 @@ int callback_function(lua_State* L)
 {
 	unsigned int *fid = clua_checkgofunction(L,1);
 	GoInterface* gi = clua_getgostate(L);
+	//remove the go function from the stack (to present same behavior as lua_CFunctions)
+	lua_remove(L,1);
 	return golua_callgofunction(*gi,*fid);
 }
 
