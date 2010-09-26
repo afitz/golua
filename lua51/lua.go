@@ -158,7 +158,10 @@ func callAllocf(fp uintptr,	ptr uintptr,
 }
 
 func AtPanic(L *State, panicf GoFunction) (oldpanicf GoFunction) {
-	fid := L.register(panicf);
+	fid := uint(0);
+	if panicf != nil {
+		fid = L.register(panicf);
+	}
 	oldres := interface{}(C.clua_atpanic(L.s,C.uint(fid)));
 	switch i := oldres.(type) {
 	case C.uint:
@@ -170,10 +173,10 @@ func AtPanic(L *State, panicf GoFunction) (oldpanicf GoFunction) {
 		return func(L1 *State) int {
 			return int(C.clua_callluacfunc(L1.s,i));
 		}
-	default:
 	}
-	//TODO: error here... we only call this from one place with these two types
-	return *(new(GoFunction));
+	//generally we only get here if the panicf got set to something like nil
+	//potentially dangerous because we may silently fail 
+	return nil;
 }
 
 

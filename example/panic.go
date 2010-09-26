@@ -16,7 +16,7 @@ func main() {
 	lua.OpenLibs(L);
 
 	currentPanicf := lua.AtPanic(L,nil);
-
+	currentPanicf = lua.AtPanic(L,currentPanicf);
 	newPanic := func(L1 *lua.State) int {
 		fmt.Println("I AM PANICKING!!!");
 		return currentPanicf(L1);

@@ -2,7 +2,6 @@
 #include <lauxlib.h>
 #include <lualib.h>
 #include "_cgo_export.h"
-
 //metatables to register:
 //	GoLua.GoInterface
 //  GoLua.GoFunction
@@ -119,6 +118,7 @@ int callback_panicf(lua_State* L)
 
 }
 
+//TODO: currently setting garbage when panicf set to null
 GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
 {
 	//get old panicfid
@@ -138,7 +138,6 @@ GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
 
 	//now set the panic function
 	lua_CFunction pf = lua_atpanic(L,&callback_panicf);
-
 	//make a GoInterface with a wrapped C panicf or the original go panicf
 	if(pf == &callback_panicf)
 	{
@@ -146,6 +145,7 @@ GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
 	}
 	else
 	{
+		//TODO: technically UB, function ptr -> non function ptr
 		return golua_cfunctiontointerface((int*)pf);
 	}
 }
