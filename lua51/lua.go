@@ -123,14 +123,14 @@ func cfunctiontointerface(f *uintptr) interface{} {
 }
 
 
-func PushGoFunction(L *State, f GoFunction) {
+func (L *State) PushGoFunction(f GoFunction) {
 	fid := L.register(f);
 	C.clua_pushgofunction(L.s,C.uint(fid));
 }
 
 
 //push pointer by value, as a value - we don't impact lifetime
-func PushLightUserdata(L *State, ud *interface{}) {
+func (L *State) PushLightUserdata(ud *interface{}) {
 	//push
 	C.lua_pushlightuserdata(L.s,unsafe.Pointer(ud));
 
@@ -145,7 +145,7 @@ func PushUserdata(L *State, ud interface{}) {
 */
 
 //old style
-func NewUserdata(L* State, size uintptr) unsafe.Pointer {
+func (L *State) NewUserdata(size uintptr) unsafe.Pointer {
 	return unsafe.Pointer(C.lua_newuserdata(L.s, C.size_t(size)));
 }
 
@@ -157,7 +157,7 @@ func callAllocf(fp uintptr,	ptr uintptr,
 	return uintptr((*((*Alloc)(unsafe.Pointer(fp))))(unsafe.Pointer(ptr),osize,nsize));
 }
 
-func AtPanic(L *State, panicf GoFunction) (oldpanicf GoFunction) {
+func (L *State) AtPanic(panicf GoFunction) (oldpanicf GoFunction) {
 	fid := uint(0);
 	if panicf != nil {
 		fid = L.register(panicf);
@@ -180,106 +180,106 @@ func AtPanic(L *State, panicf GoFunction) (oldpanicf GoFunction) {
 }
 
 
-func Call(L *State, nargs int, nresults int) {
+func (L *State) Call(nargs int, nresults int) {
 	C.lua_call(L.s,C.int(nargs),C.int(nresults));
 }
 
-func CheckStack(L *State, extra int) bool {
+func (L *State) CheckStack(extra int) bool {
 	return C.lua_checkstack(L.s, C.int(extra)) != 0;
 }
 
-func Close(L *State) {
+func (L *State) Close() {
 	C.lua_close(L.s);
 }
 
-func Concat(L *State, n int) {
+func (L *State) Concat(n int) {
 	C.lua_concat(L.s,C.int(n));
 }
 
-func CreateTable(L *State, narr int, nrec int) {
+func (L *State) CreateTable(narr int, nrec int) {
 	C.lua_createtable(L.s, C.int(narr), C.int(nrec));
 }
 
 //CPcall replacement
-func GoPCall(L *State, fun GoFunction, ud interface{}) int {
+func (L *State) GoPCall(fun GoFunction, ud interface{}) int {
 	//TODO: need to emulate by pushing a c closure as in pushgofunction
 	return 0;
 }
 
 //TODO: data be a slice? 
-func Dump(L *State, writer Writer, data interface{}) int {
+func (L *State) Dump( writer Writer, data interface{}) int {
 	//TODO:
 	return 0;
 }
 
-func Equal(L *State, index1, index2 int) bool {
+func (L *State) Equal(index1, index2 int) bool {
 	return C.lua_equal(L.s, C.int(index1), C.int(index2)) == 1
 }
 
-func Error(L *State) int	{ return int(C.lua_error(L.s)) }
+func (L *State) Error() int	{ return int(C.lua_error(L.s)) }
 
-func GC(L *State, what, data int) int	{ return int(C.lua_gc(L.s, C.int(what), C.int(data))) }
+func (L *State) GC(what, data int) int	{ return int(C.lua_gc(L.s, C.int(what), C.int(data))) }
 
-func GetfEnv(L *State, index int)	{ C.lua_getfenv(L.s, C.int(index)) }
+func (L *State) GetfEnv(index int)	{ C.lua_getfenv(L.s, C.int(index)) }
 
-func GetField(L *State, index int, k string) {
+func (L *State) GetField(index int, k string) {
 	C.lua_getfield(L.s, C.int(index), C.CString(k))
 }
 
-func GetGlobal(L *State, name string)	{ GetField(L, LUA_GLOBALSINDEX, name) }
+func (L *State) GetGlobal(name string)	{ L.GetField(LUA_GLOBALSINDEX, name) }
 
-func GetMetaTable(L *State, index int) bool {
+func (L *State) GetMetaTable(index int) bool {
 	return C.lua_getmetatable(L.s, C.int(index)) != 0
 }
 
-func GetTable(L *State, index int)	{ C.lua_gettable(L.s, C.int(index)) }
+func (L *State) GetTable(index int)	{ C.lua_gettable(L.s, C.int(index)) }
 
-func GetTop(L *State) int	{ return int(C.lua_gettop(L.s)) }
+func (L *State) GetTop() int	{ return int(C.lua_gettop(L.s)) }
 
-func Insert(L *State, index int)	{ C.lua_insert(L.s, C.int(index)) }
+func (L *State) Insert(index int)	{ C.lua_insert(L.s, C.int(index)) }
 
-func IsBoolean(L *State, index int) bool {
+func (L *State) IsBoolean(index int) bool {
 	return int(C.lua_type(L.s, C.int(index))) == LUA_TBOOLEAN
 }
 
-func IsGoFunction(L *State, index int) bool {
+func (L *State) IsGoFunction(index int) bool {
 	//TODO:go function is now a userdatum, not a c function, so this will not work 
 	return C.lua_iscfunction(L.s, C.int(index)) == 1
 }
 
 //TODO: add iscfunction
 
-func IsFunction(L *State, index int) bool {
+func (L *State) IsFunction(index int) bool {
 	return int(C.lua_type(L.s, C.int(index))) == LUA_TFUNCTION
 }
 
-func IsLightUserdata(L *State, index int) bool {
+func (L *State) IsLightUserdata(index int) bool {
 	return int(C.lua_type(L.s, C.int(index))) == LUA_TLIGHTUSERDATA
 }
 
-func IsNil(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TNIL }
+func (L *State) IsNil(index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TNIL }
 
-func IsNone(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TNONE }
+func (L *State) IsNone(index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TNONE }
 
-func IsNoneOrNil(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) <= 0 }
+func (L *State) IsNoneOrNil(index int) bool	{ return int(C.lua_type(L.s, C.int(index))) <= 0 }
 
-func IsNumber(L *State, index int) bool	{ return C.lua_isnumber(L.s, C.int(index)) == 1 }
+func (L *State) IsNumber(index int) bool	{ return C.lua_isnumber(L.s, C.int(index)) == 1 }
 
-func IsString(L *State, index int) bool	{ return C.lua_isstring(L.s, C.int(index)) == 1 }
+func (L *State) IsString(index int) bool	{ return C.lua_isstring(L.s, C.int(index)) == 1 }
 
-func IsTable(L *State, index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TTABLE }
+func (L *State) IsTable(index int) bool	{ return int(C.lua_type(L.s, C.int(index))) == LUA_TTABLE }
 
-func IsThread(L *State, index int) bool {
+func (L *State) IsThread(index int) bool {
 	return int(C.lua_type(L.s, C.int(index))) == LUA_TTHREAD
 }
 
-func IsUserdata(L *State, index int) bool	{ return C.lua_isuserdata(L.s, C.int(index)) == 1 }
+func (L *State) IsUserdata(index int) bool	{ return C.lua_isuserdata(L.s, C.int(index)) == 1 }
 
-func LessThan(L *State, index1, index2 int) bool {
+func (L *State) LessThan(index1, index2 int) bool {
 	return C.lua_lessthan(L.s, C.int(index1), C.int(index2)) == 1
 }
 
-func Load(L *State, reader Reader, data interface{}, chunkname string) int {
+func (L *State) Load(reader Reader, data interface{}, chunkname string) int {
 	//TODO:
 	return 0;
 }
@@ -295,7 +295,7 @@ func NewStateAlloc(f Alloc) *State {
 	return newState(ls);
 }
 
-func NewTable(L *State) {
+func (L *State) NewTable() {
 	C.lua_createtable(L.s,0,0);
 }
 
@@ -320,12 +320,12 @@ func PCall(L *State, nargs int, nresults int, errfunc int) int {
 	return int(C.lua_pcall(L.s, C.int(nargs), C.int(nresults), C.int(errfunc)));
 }
 
-func Pop(L *State, n int) {
+func (L *State) Pop(n int) {
 	//C.lua_pop(L.s, C.int(n));
 	C.lua_settop(L.s, C.int(-n-1));
 }
 
-func PushBoolean(L *State, b bool) {
+func (L *State) PushBoolean(b bool) {
 	var bint int;
 	if b {
 		bint = 1;
@@ -335,140 +335,140 @@ func PushBoolean(L *State, b bool) {
 	C.lua_pushboolean(L.s, C.int(bint));
 }
 
-func PushString(L *State, str string) {
+func (L *State) PushString(str string) {
 	C.lua_pushstring(L.s,C.CString(str));
 }
 
-func PushInteger(L *State, n int) {
+func (L *State) PushInteger(n int) {
 	C.lua_pushinteger(L.s,C.lua_Integer(n));
 }
 
-func PushNil(L *State) {
+func (L *State) PushNil() {
 	C.lua_pushnil(L.s);
 }
 
-func PushNumber(L *State, n float64) {
+func (L *State) PushNumber(n float64) {
 	C.lua_pushnumber(L.s, C.lua_Number(n));
 }
 
-func PushThread(L *State) (isMain bool) {
+func (L *State) PushThread() (isMain bool) {
 	return C.lua_pushthread(L.s) != 0;
 }
 
-func PushValue(L *State, index int) {
+func (L *State) PushValue(index int) {
 	C.lua_pushvalue(L.s, C.int(index));
 }
 
-func RawEqual(L *State, index1 int, index2 int) bool {
+func (L *State) RawEqual(index1 int, index2 int) bool {
 	return C.lua_rawequal(L.s, C.int(index1), C.int(index2)) != 0;
 }
 
-func RawGet(L *State, index int) {
+func (L *State) RawGet(index int) {
 	C.lua_rawget(L.s, C.int(index));
 }
 
-func RawGeti(L *State, index int, n int) {
+func (L *State) RawGeti(index int, n int) {
 	C.lua_rawgeti(L.s, C.int(index), C.int(n));
 }
 
-func RawSet(L *State, index int) {
+func (L *State) RawSet(index int) {
 	C.lua_rawset(L.s, C.int(index));
 }
 
-func RawSeti(L *State, index int, n int) {
+func (L *State) RawSeti(index int, n int) {
 	C.lua_rawseti(L.s, C.int(index), C.int(n));
 }
 
-func Register(L *State, name string, f GoFunction) {
-	PushGoFunction(L,f);
-	SetGlobal(L,name);
+func (L *State) Register(name string, f GoFunction) {
+	L.PushGoFunction(f);
+	L.SetGlobal(name);
 }
 
-func Remove(L *State, index int) {
+func (L *State) Remove(index int) {
 	C.lua_remove(L.s, C.int(index));
 }
 
-func Replace(L *State, index int) {
+func (L *State) Replace(index int) {
 	C.lua_replace(L.s, C.int(index));
 }
 
-func Resume(L *State, narg int) int {
+func (L *State) Resume(narg int) int {
 	return int(C.lua_resume(L.s, C.int(narg)));
 }
 
-func SetAllocf(L *State, f Alloc) {
+func (L *State) SetAllocf(f Alloc) {
 	C.clua_setallocf(L.s,unsafe.Pointer(&f));
 }
 
-func SetfEnv(L *State, index int) {
+func (L *State) SetfEnv(index int) {
 	C.lua_setfenv(L.s, C.int(index));
 }
 
-func SetField(L *State, index int, k string) {
+func (L *State) SetField(index int, k string) {
 	C.lua_setfield(L.s, C.int(index), C.CString(k));
 }
 
-func SetGlobal(L *State, name string) {
+func (L *State) SetGlobal(name string) {
 	C.lua_setfield(L.s, C.int(LUA_GLOBALSINDEX), C.CString(name))
 }
 
-func SetMetaTable(L *State, index int) {
+func (L *State) SetMetaTable(index int) {
 	C.lua_setmetatable(L.s, C.int(index));
 }
 
-func SetTable(L *State, index int) {
+func (L *State) SetTable(index int) {
 	C.lua_settable(L.s, C.int(index));
 }
 
-func SetTop(L *State, index int) {
+func (L *State) SetTop(index int) {
 	C.lua_settop(L.s, C.int(index));
 }
 
-func Status(L *State) int {
+func (L *State) Status() int {
 	return int(C.lua_status(L.s));
 }
 
-func ToBoolean(L *State, index int) bool {
+func (L *State) ToBoolean(index int) bool {
 	return C.lua_toboolean(L.s, C.int(index)) != 0;
 }
 
-func ToGoFunction(L *State, index int) (f GoFunction) {
+func (L *State) ToGoFunction(index int) (f GoFunction) {
 	fid := C.clua_togofunction(L.s,C.int(index))
 	return L.registry[fid].(GoFunction);
 }
 
-func ToString(L *State, index int) string {
+func (L *State) ToString(index int) string {
 	var size C.size_t;
 	//C.GoString(C.lua_tolstring(L.s, C.int(index), &size));
 	return C.GoString(C.lua_tolstring(L.s,C.int(index),&size));
 }
 
-func ToInteger(L *State, index int) int {
+func (L *State) ToInteger(index int) int {
 	return int(C.lua_tointeger(L.s, C.int(index)));
 }
 
-func ToNumber(L *State, index int) float64 {
+func (L *State) ToNumber(index int) float64 {
 	return float64(C.lua_tonumber(L.s, C.int(index)));
 }
 
-func ToPointer(L *State, index int) uintptr {
+func (L *State) ToPointer(index int) uintptr {
 	return uintptr(C.lua_topointer(L.s, C.int(index)));
 }
 
-func ToThread(L *State, index int) *State {
+func (L *State) ToThread(index int) *State {
 	//TODO: find a way to link lua_State* to existing *State, return that
 	return &State{}
 }
 
-func ToUserdata(L *State, index int) unsafe.Pointer {
+func (L *State) ToUserdata(index int) unsafe.Pointer {
 	return unsafe.Pointer(C.lua_touserdata(L.s,C.int(index)));
 }
 
-func Type(L *State, index int) int {
+func (L *State) Type(index int) int {
 	return int(C.lua_type(L.s, C.int(index)));
 }
 
-func Typename(L *State, tp int) string {
+func (L *State) Typename(tp int) string {
 	return C.GoString(C.lua_typename(L.s, C.int(tp)));
 }
 
@@ -476,36 +476,36 @@ func XMove(from *State, to *State, n int) {
 	C.lua_xmove(from.s, to.s, C.int(n));
 }
 
-func Yield(L *State, nresults int) int {
+func (L *State) Yield(nresults int) int {
 	return int(C.lua_yield(L.s, C.int(nresults)));
 }
 
 // Restricted library opens
 
-func OpenBase(L *State) {
+func (L *State) OpenBase() {
         C.clua_openbase(L.s);
 }
 
-func OpenIO(L *State) {
+func (L *State) OpenIO() {
         C.clua_openio(L.s);
 }
 
-func OpenMath(L *State) {
+func (L *State) OpenMath() {
         C.clua_openmath(L.s);
 }
 
-func OpenPackage(L *State) {
+func (L *State) OpenPackage() {
         C.clua_openpackage(L.s);
 }
 
-func OpenString(L *State) {
+func (L *State) OpenString() {
         C.clua_openstring(L.s);
 }
 
-func OpenTable(L *State) {
+func (L *State) OpenTable() {
         C.clua_opentable(L.s);
 }
 
-func OpenOS(L *State) {
+func (L *State) OpenOS() {
         C.clua_openos(L.s);
 }

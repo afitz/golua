@@ -60,16 +60,16 @@ func CheckUdata(L *State, narg int, tname string) unsafe.Pointer {
 }
 
 //true if no errors, false otherwise
-func DoFile(L *State, filename string) bool {
-	if LoadFile(L,filename) == 0 {
+func (L *State) DoFile(filename string) bool {
+	if L.LoadFile(filename) == 0 {
 		return PCall(L,0,LUA_MULTRET,0) == 0;
 	}
 	return false;
 }
 
 //true if no errors, false otherwise
-func DoString(L *State, str string) bool {
-	if LoadString(L,str) == 0 {
+func (L *State) DoString(str string) bool {
+	if L.LoadString(str) == 0 {
 		return PCall(L,0,LUA_MULTRET,0) == 0;
 	}
 	return false;
@@ -99,16 +99,16 @@ func GSub(L *State, s string, p string, r string) string {
 //TODO: luaL_loadbuffer
 
 
-func LoadFile(L *State, filename string) int {
+func (L *State) LoadFile(filename string) int {
 	return int(C.luaL_loadfile(L.s,C.CString(filename)));
 }
 
-func LoadString(L *State, s string) int {
+func (L *State) LoadString(s string) int {
 	return int(C.luaL_loadstring(L.s,C.CString(s)));
 }
 
 //returns false if registry already contains key tname
-func NewMetaTable(L *State, tname string) bool {
+func (L *State) NewMetaTable(tname string) bool {
 	return C.luaL_newmetatable(L.s, C.CString(tname)) != 0;
 }
 
@@ -118,26 +118,26 @@ func NewState() *State {
 	return L;
 }
 
-func OpenLibs(L *State) {
+func (L *State) OpenLibs() {
 	C.luaL_openlibs(L.s);
 }
 
-func OptInteger(L *State, narg int, d int) int {
+func (L *State) OptInteger(narg int, d int) int {
 	return int(C.luaL_optinteger(L.s,C.int(narg),C.lua_Integer(d)));
 }
 
-func OptNumber(L *State, narg int, d float64) float64 {
+func (L *State) OptNumber(narg int, d float64) float64 {
 	return float64(C.luaL_optnumber(L.s,C.int(narg),C.lua_Number(d)));
 }
 
-func OptString(L *State, narg int, d string) string {
+func (L *State) OptString(narg int, d string) string {
 	var length C.size_t;
 	return C.GoString(C.luaL_optlstring(L.s,C.int(narg),C.CString(d),&length));
 }
 
 //luaL_prepbuffer
 
-func Ref(L *State, t int) int {
+func (L *State) Ref(t int) int {
 	return int(C.luaL_ref(L.s,C.int(t)));
 }
 
