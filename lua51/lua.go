@@ -129,6 +129,11 @@ func (L *State) PushGoFunction(f GoFunction) {
 }
 
 
+func (L *State) PushLightInteger(n int) {
+	C.clua_pushlightinteger(L.s, C.int(n))
+}
+
+
 //push pointer by value, as a value - we don't impact lifetime
 func (L *State) PushLightUserdata(ud *interface{}) {
 	//push
@@ -300,7 +305,7 @@ func (L *State) NewTable() {
 }
 
 
-func NewThread(L* State) *State {
+func (L *State) NewThread() *State {
 	//TODO: call newState with result from C.lua_newthread and return it
 	//TODO: should have same lists as parent
 	//		but may complicate gc
@@ -308,15 +313,15 @@ func NewThread(L* State) *State {
 	return &State{s,nil,nil};
 }
 
-func Next(L *State, index int) int {
+func (L *State) Next(index int) int {
 	return int(C.lua_next(L.s,C.int(index)));
 }
 
-func ObjLen(L *State, index int) uint {
+func (L *State) ObjLen(index int) uint {
 	return uint(C.lua_objlen(L.s,C.int(index)));
 }
 
-func PCall(L *State, nargs int, nresults int, errfunc int) int {
+func (L *State) PCall(nargs int, nresults int, errfunc int) int {
 	return int(C.lua_pcall(L.s, C.int(nargs), C.int(nresults), C.int(errfunc)));
 }
 
@@ -462,6 +467,10 @@ func (L *State) ToThread(index int) *State {
 
 func (L *State) ToUserdata(index int) unsafe.Pointer {
 	return unsafe.Pointer(C.lua_touserdata(L.s,C.int(index)));
+}
+
+func (L *State) ToLightInteger(index int) int {
+	return int(C.clua_tolightinteger(L.s, C.int(index)))
 }
 
 func (L *State) Type(index int) int {

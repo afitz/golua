@@ -62,7 +62,7 @@ func CheckUdata(L *State, narg int, tname string) unsafe.Pointer {
 //true if no errors, false otherwise
 func (L *State) DoFile(filename string) bool {
 	if L.LoadFile(filename) == 0 {
-		return PCall(L,0,LUA_MULTRET,0) == 0;
+		return L.PCall(0,LUA_MULTRET,0) == 0;
 	}
 	return false;
 }
@@ -70,7 +70,7 @@ func (L *State) DoFile(filename string) bool {
 //true if no errors, false otherwise
 func (L *State) DoString(str string) bool {
 	if L.LoadString(str) == 0 {
-		return PCall(L,0,LUA_MULTRET,0) == 0;
+		return L.PCall(0,LUA_MULTRET,0) == 0;
 	}
 	return false;
 }

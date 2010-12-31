@@ -65,6 +65,15 @@ void clua_pushgofunction(lua_State* L, unsigned int fid)
 	lua_setmetatable(L, -2);
 }
 
+void clua_pushlightinteger(lua_State* L, unsigned int n)
+{
+  lua_pushlightuserdata(L, (void*)n);
+}
+
+int clua_tolightinteger(lua_State *L, unsigned int index)
+{
+  return (int)lua_touserdata(L, index);
+}
 
 void clua_setgostate(lua_State* L, GoInterface gi)
 {
