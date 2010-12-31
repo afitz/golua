@@ -36,19 +36,16 @@ func main() {
 	refHolder = make([][]byte,0,500);
 
 	L := lua.NewStateAlloc(AllocatorF);
-	lua.OpenLibs(L);
+	defer L.Close()
+	L.OpenLibs();
 
-	lua.SetAllocf(L,A2);
+	L.SetAllocf(A2);
 
 	for i:=0; i < 10; i++ {
-		lua.GetField(L, lua.LUA_GLOBALSINDEX, "print");
-		lua.PushString(L, "Hello World!");
-		lua.Call(L,1,0);
+		L.GetField(lua.LUA_GLOBALSINDEX, "print");
+		L.PushString("Hello World!");
+		L.Call(1,0);
 	}
 
 	fmt.Println(len(refHolder));
-
-	lua.Close(L);
-
-
 }

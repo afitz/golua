@@ -13,20 +13,19 @@ func main() {
 	var L *lua.State;
 
 	L = lua.NewState();
-	lua.OpenLibs(L);
+	defer L.Close()
+	L.OpenLibs();
 
-	currentPanicf := lua.AtPanic(L,nil);
-	currentPanicf = lua.AtPanic(L,currentPanicf);
+	currentPanicf := L.AtPanic(nil);
+	currentPanicf = L.AtPanic(currentPanicf);
 	newPanic := func(L1 *lua.State) int {
 		fmt.Println("I AM PANICKING!!!");
 		return currentPanicf(L1);
 	}
 
-	lua.AtPanic(L,newPanic);
+	L.AtPanic(newPanic);
 
 	//force a panic
-	lua.PushNil(L);
-	lua.Call(L,0,0);
-
-	lua.Close(L);
+	L.PushNil();
+	L.Call(0,0);
 }

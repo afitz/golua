@@ -11,9 +11,9 @@ type Userdata struct {
 func main() {
 	var L *lua.State;
 	L = lua.NewState();
-	lua.OpenLibs(L);
+	L.OpenLibs();
 
-	rawptr := lua.NewUserdata(L,uintptr(unsafe.Sizeof(Userdata{})));
+	rawptr := L.NewUserdata(uintptr(unsafe.Sizeof(Userdata{})));
 	var ptr *Userdata;
 	ptr = (*Userdata)(rawptr);
 	ptr.a = 2;
@@ -21,7 +21,7 @@ func main() {
 
 	fmt.Println(ptr);
 
-	rawptr2 := lua.ToUserdata(L,-1);
+	rawptr2 := L.ToUserdata(-1);
 	ptr2 := (*Userdata)(rawptr2);
 
 	fmt.Println(ptr2);

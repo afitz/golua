@@ -22,25 +22,25 @@ func main() {
 	var L *lua51.State;
 
 	L = lua51.NewState();
-	lua51.OpenLibs(L);
+	L.OpenLibs();
 
-	lua51.GetField(L, lua51.LUA_GLOBALSINDEX, "print");
-	lua51.PushString(L, "Hello World!");
-	lua51.Call(L,1,0);
+	L.GetField(lua51.LUA_GLOBALSINDEX, "print");
+	L.PushString("Hello World!");
+	L.Call(1,0);
 
-	lua51.PushGoFunction(L, test);
-	lua51.PushGoFunction(L, test);
-	lua51.PushGoFunction(L, test);
-	lua51.PushGoFunction(L, test);
+	L.PushGoFunction(test);
+	L.PushGoFunction(test);
+	L.PushGoFunction(test);
+	L.PushGoFunction(test);
 
-	lua51.PushGoFunction(L, test2);
-	lua51.PushInteger(L,42);
-	lua51.Call(L,1,0);
+	L.PushGoFunction(test2);
+	L.PushInteger(42);
+	L.Call(1,0);
 
 
-	lua51.Call(L,0,0);
-	lua51.Call(L,0,0);
-	lua51.Call(L,0,0);
+	L.Call(0,0);
+	L.Call(0,0);
+	L.Call(0,0);
 
-	lua51.Close(L);
+	L.Close();
 }
