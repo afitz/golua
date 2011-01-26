@@ -15,4 +15,3 @@ clean:
 
 install:
 	cd $(LUA51_DIR) && make install
-	

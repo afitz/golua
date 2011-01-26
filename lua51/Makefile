@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-include $(GOROOT)/src/Make.inc	
-
-CGO_CFLAGS+=
-CGO_DEPS=golua.o _cgo_export.o
-CGO_LDFLAGS+=golua.o _cgo_export.o #-L./ -lgolua
+include $(GOROOT)/src/Make.inc
 
 ifndef LUA51_LIBNAME
 LUA51_LIBNAME=lua5.1
 endif
+
+CGO_CFLAGS+=
+CGO_DEPS=_cgo_export.o
+CGO_LDFLAGS+=-l$(LUA51_LIBNAME)
+CGO_OFILES=golua.o
 
 ifndef LUA51_INCLUDE_DIR
 CGO_CFLAGS+=`pkg-config --cflags $(LUA51_LIBNAME)`
@@ -31,14 +32,12 @@ CGOFILES=\
 	lua.go \
 	lauxlib.go \
 	lua_defs.go
-#GOFILES=lua_defs.go
 
 CLEANFILES+=lua_defs.go
 
 LUA_HEADERS=lua.h lauxlib.h lualib.h
 LUA_HEADER_FILES:=$(patsubst %,$(LUA51_INCLUDE_DIR)/%,$(LUA_HEADERS))
 LUA_INCLUDE_DIRECTIVES:=$(patsubst %,//\#include <%>\n, $(LUA_HEADERS))
-
 
 include $(GOROOT)/src/Make.pkg
 
@@ -53,5 +52,5 @@ lua_defs.go:
 	echo "package lua51;" > lua_defs.go
 	echo "$(LUA_INCLUDE_DIRECTIVES)" "import \"C\"" >> lua_defs.go
 #	echo "import \"C\"" >> lua_defs.go
-	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/const/' | sed 's/\([A-Z_][A-Z_]*\)[\t ].*/\1 = C.\1/'  >> lua_defs.go
+	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/const/' | sed 's/\([A-Z_][A-Z_]*\)[[:space:]]*.*/\1 = C.\1/'  >> lua_defs.go
 	
