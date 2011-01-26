@@ -6,20 +6,13 @@ Simplest way to install:
 #cd $GOROOT/src/pkg/github.com/afitz/golua
 #make install
 
-
 Configuration Variables
 -----------------------
-LUA51_LIBNAME
-default: lua5.1
-used if LUA51_LIB_DIR is defined
 
-LUA51_INCLUDE_DIR
-default: undefined
-defining this overrides the pkg-config mechanism to find the lua cflags
-
-LUA51_LIB_DIR
-default: undefined
-defining this overrides the pkg-config mechanism to create the LD_FLAGS
+In this version of the cgo bindings, I have removed the configuration variables
+and instead force the build against a copy of the Lua-5.1.4 source that is
+included in this distribution. This ensures that regardless of what changes you
+make to your system Lua libraries, these bindings will continue to function.
 
 Licensing 
 -------------------------
@@ -27,6 +20,5 @@ GoLua is released under the MIT license.
 Please see the LICENSE file for more information.
 
 Lua is Copyright (c) Lua.org, PUC-Rio.  All rights reserved.
-
-
-
+The Lua license can be found in the source and is available online:
+    http://www.lua.org/license.html
