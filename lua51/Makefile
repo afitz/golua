@@ -4,9 +4,7 @@
 
 include $(GOROOT)/src/Make.inc	
 
-CGO_CFLAGS+=
-CGO_DEPS=golua.o _cgo_export.o
-CGO_LDFLAGS+=golua.o _cgo_export.o #-L./ -lgolua
+CGO_OFILES+=golua.o
 
 ifndef LUA51_LIBNAME
 LUA51_LIBNAME=lua5.1
@@ -31,7 +29,6 @@ CGOFILES=\
 	lua.go \
 	lauxlib.go \
 	lua_defs.go
-#GOFILES=lua_defs.go
 
 CLEANFILES+=lua_defs.go
 
@@ -54,4 +51,4 @@ lua_defs.go:
 	echo "$(LUA_INCLUDE_DIRECTIVES)" "import \"C\"" >> lua_defs.go
 #	echo "import \"C\"" >> lua_defs.go
 	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/const/' | sed 's/\([A-Z_][A-Z_]*\)[\t ].*/\1 = C.\1/'  >> lua_defs.go
-	
+
