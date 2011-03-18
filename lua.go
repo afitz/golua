@@ -1,4 +1,4 @@
-package lua51
+package golua
 
 //#include <lua.h>
 //#include "golua.h"
