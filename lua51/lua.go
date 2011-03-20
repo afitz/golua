@@ -184,7 +184,6 @@ func (L *State) AtPanic(panicf GoFunction) (oldpanicf GoFunction) {
 	return nil;
 }
 
-
 func (L *State) Call(nargs int, nresults int) {
 	C.lua_call(L.s,C.int(nargs),C.int(nresults));
 }
@@ -517,4 +516,8 @@ func (L *State) OpenTable() {
 
 func (L *State) OpenOS() {
         C.clua_openos(L.s);
+}
+
+func (L *State) SetExecutionLimit(instrNumber int) {
+	C.clua_setexecutionlimit(L.s, C.int(instrNumber));
 }

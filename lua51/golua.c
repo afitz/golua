@@ -220,3 +220,14 @@ void clua_openos(lua_State* L){
 	lua_pushstring(L,"os");
 	lua_call(L, 1, 0);
 }
+
+void clua_hook_function(lua_State *L, lua_Debug *ar) {
+  lua_checkstack(L, 2);
+  lua_pushstring(L, "Lua execution quantum exceeded");
+  lua_error(L);
+}
+
+void clua_setexecutionlimit(lua_State* L, int n) {
+  lua_sethook(L, &clua_hook_function, LUA_MASKCOUNT, n);
+}
+
