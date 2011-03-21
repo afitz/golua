@@ -47,7 +47,13 @@ CGOFILES=\
 	lauxlib.go \
 	lua_defs.go
 
-CLEANFILES+=lua_defs.go
+CLEANFILES+=lua_defs.go\
+			lua-5.1.4/src/*.o\
+			example/*.8\
+			example/basic\
+			example/alloc\
+			example/panic\
+			example/userdata\
 
 LUA_HEADERS=lua.h lauxlib.h lualib.h
 LUA_HEADER_FILES:=$(patsubst %,lua-5.1.4/src/%,$(LUA_HEADERS))
