@@ -187,6 +187,10 @@
 #define LUAI_FUNC	__attribute__((visibility("hidden"))) extern
 #define LUAI_DATA	LUAI_FUNC
 
+#elif defined(linux)
+#define LUAI_FUNC
+#define LUAI_DATA
+
 #else
 #define LUAI_FUNC	__attribute__((visibility("hidden"))) extern
 #define LUAI_DATA	LUAI_FUNC
