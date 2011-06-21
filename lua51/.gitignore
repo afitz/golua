@@ -22,5 +22,3 @@ lua.cgo2.o
 lua_defs.cgo1.go
 lua_defs.cgo2.c
 lua_defs.cgo2.o
-lua_defs.go
-

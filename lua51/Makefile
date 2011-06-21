@@ -47,8 +47,6 @@ CGOFILES=\
 	lauxlib.go \
 	lua_defs.go
 
-CLEANFILES+=lua_defs.go
-
 LUA_HEADERS=lua.h lauxlib.h lualib.h
 LUA_HEADER_FILES:=$(patsubst %,../lua-5.1.4/src/%,$(LUA_HEADERS))
 LUA_INCLUDE_DIRECTIVES:=$(patsubst %,//\#include <%>\n, $(LUA_HEADERS))
@@ -62,7 +60,8 @@ include $(GOROOT)/src/Make.pkg
 golua.o: golua.c
 	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -fPIC $(CFLAGS) -c golua.c -o golua.o
 
-lua_defs.go:
+# This target should not be invoked during build, just to regenerate the lua definitions
+genluadefs:
 	echo "package lua51;" > lua_defs.go
 	echo "$(LUA_INCLUDE_DIRECTIVES)" "import \"C\"" >> lua_defs.go
 #	echo "import \"C\"" >> lua_defs.go
