@@ -8,7 +8,6 @@ CGO_CFLAGS+=-Ilua-5.1.4/src
 CGO_DEPS=_cgo_export.o
 CGO_LDFLAGS+=-lm
 CGO_OFILES=\
-		   golua.o \
 		   lua-5.1.4/src/lapi.o \
 		   lua-5.1.4/src/lauxlib.o \
 		   lua-5.1.4/src/lbaselib.o \
@@ -38,7 +37,8 @@ CGO_OFILES=\
 		   lua-5.1.4/src/lundump.o \
 		   lua-5.1.4/src/lvm.o \
 		   lua-5.1.4/src/lzio.o \
-		   lua-5.1.4/src/print.o
+		   lua-5.1.4/src/print.o \
+		   golua.o \
 
 TARG=golua
 
