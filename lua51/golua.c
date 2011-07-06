@@ -46,7 +46,7 @@ int gchook_wrapper(lua_State* L)
 	GoInterface* gi = clua_getgostate(L);
 	if(fid != NULL)
 		return golua_gchook(*gi,*fid);
-
+	printf("GCHook failed\n");
 	//TODO: try udata or whatever, after impl
 
 	return 0;
