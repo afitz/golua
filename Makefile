@@ -47,8 +47,7 @@ CGOFILES=\
 	lauxlib.go \
 	lua_defs.go
 
-CLEANFILES+=lua_defs.go\
-			lua-5.1.4/src/*.o\
+CLEANFILES+=lua-5.1.4/src/*.o\
 			example/*.8\
 			example/basic\
 			example/alloc\
@@ -70,7 +69,7 @@ all: install examples
 golua.o: golua.c
 	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -fPIC $(CFLAGS) -c golua.c -o golua.o
 
-lua_defs.go:
+genluadefs:
 	echo "package golua;" > lua_defs.go
 	echo "$(LUA_INCLUDE_DIRECTIVES)" "import \"C\"" >> lua_defs.go
 #	echo "import \"C\"" >> lua_defs.go
