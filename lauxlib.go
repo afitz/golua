@@ -3,6 +3,7 @@ package golua
 //#include <lua.h>
 //#include <lauxlib.h>
 //#include <lualib.h>
+//#include <stdlib.h>
 //#include "golua.h"
 import "C"
 import "unsafe"
@@ -14,12 +15,16 @@ import "unsafe"
 
 func ArgCheck(L *State, cond bool, narg int, extramsg string) {
 	if cond {
-		C.luaL_argerror(L.s, C.int(narg), C.CString(extramsg));
+		Cextramsg	:= C.CString(extramsg) 
+		defer C.free(unsafe.Pointer(Cextramsg))
+		C.luaL_argerror(L.s, C.int(narg), Cextramsg)
 	}
 }
 
 func ArgError(L *State, narg int, extramsg string) int {
-	return int(C.luaL_argerror(L.s,C.int(narg),C.CString(extramsg)));
+	Cextramsg	:= C.CString(extramsg) 
+	defer C.free(unsafe.Pointer(Cextramsg))
+	return int(C.luaL_argerror(L.s,C.int(narg),Cextramsg));
 }
 
 //type luaL_Buffer
@@ -27,7 +32,9 @@ func ArgError(L *State, narg int, extramsg string) int {
 //luaL_buffinit
 
 func CallMeta(L *State, obj int, e string) int {
-	return int(C.luaL_callmeta(L.s,C.int(obj),C.CString(e)));
+	Ce	:= C.CString(e) 
+	defer C.free(unsafe.Pointer(Ce))
+	return int(C.luaL_callmeta(L.s,C.int(obj),Ce))
 }
 
 func CheckAny(L *State, narg int) {
@@ -55,8 +62,11 @@ func CheckOption(L *State, narg int, def string, lst []string) int {
 func CheckType(L *State, narg int, t int) {
 	C.luaL_checktype(L.s,C.int(narg),C.int(t));
 }
+
 func CheckUdata(L *State, narg int, tname string) unsafe.Pointer {
-	return unsafe.Pointer(C.luaL_checkudata(L.s,C.int(narg),C.CString(tname)));
+	Ctname	:= C.CString(tname) 
+	defer C.free(unsafe.Pointer(Ctname)) 
+	return unsafe.Pointer(C.luaL_checkudata(L.s,C.int(narg),Ctname))
 }
 
 //true if no errors, false otherwise
@@ -83,33 +93,51 @@ func FmtError(L *State, fmt string, args...interface{}) int {
 
 //returns false if no such metatable or no such field
 func GetMetaField(L *State, obj int, e string) bool {
-	return C.luaL_getmetafield(L.s,C.int(obj),C.CString(e)) != 0;
+	Ce	:= C.CString(e) 
+	defer C.free(unsafe.Pointer(Ce)) 
+	return C.luaL_getmetafield(L.s,C.int(obj),Ce) != 0;
 }
 
 //TODO: rename better... clashes with lua_getmetatable
 func LGetMetaTable(L *State, tname string) {
-	//C.luaL_getmetatable(L.s,C.CString(tname));
-	C.lua_getfield(L.s,LUA_REGISTRYINDEX,C.CString(tname));
+	Ctname	:= C.CString(tname) 
+	defer C.free(unsafe.Pointer(Ctname)) 
+	C.lua_getfield(L.s,LUA_REGISTRYINDEX,Ctname);
 }
 
 func GSub(L *State, s string, p string, r string) string {
-	return C.GoString(C.luaL_gsub(L.s, C.CString(s), C.CString(p), C.CString(r)));
+	Cs	:= C.CString(s) 
+	Cp	:= C.CString(p) 
+	Cr	:= C.CString(r) 
+	defer func(){
+		 C.free(unsafe.Pointer(Cs))
+		 C.free(unsafe.Pointer(Cp))
+		 C.free(unsafe.Pointer(Cr))
+	}()
+
+	return C.GoString(C.luaL_gsub(L.s, Cs, Cp, Cr)) 
 }
 
 //TODO: luaL_loadbuffer
 
 
 func (L *State) LoadFile(filename string) int {
-	return int(C.luaL_loadfile(L.s,C.CString(filename)));
+	Cfilename	:= C.CString(filename) 
+	defer C.free(unsafe.Pointer(Cfilename)) 
+	return int(C.luaL_loadfile(L.s,Cfilename));
 }
 
 func (L *State) LoadString(s string) int {
-	return int(C.luaL_loadstring(L.s,C.CString(s)));
+	Cs	:= C.CString(s) 
+	defer C.free(unsafe.Pointer(Cs)) 
+	return int(C.luaL_loadstring(L.s,Cs))
 }
 
 //returns false if registry already contains key tname
 func (L *State) NewMetaTable(tname string) bool {
-	return C.luaL_newmetatable(L.s, C.CString(tname)) != 0;
+	Ctname	:= C.CString(tname) 
+	defer C.free(unsafe.Pointer(Ctname)) 
+	return C.luaL_newmetatable(L.s, Ctname) != 0;
 }
 
 func NewState() *State {
@@ -132,7 +160,9 @@ func (L *State) OptNumber(narg int, d float64) float64 {
 
 func (L *State) OptString(narg int, d string) string {
 	var length C.size_t;
-	return C.GoString(C.luaL_optlstring(L.s,C.int(narg),C.CString(d),&length));
+	Cd	:= C.CString(d) 
+	defer C.free(unsafe.Pointer(Cd)) 
+	return C.GoString(C.luaL_optlstring(L.s,C.int(narg),Cd,&length));
 }
 
 //luaL_prepbuffer
@@ -150,7 +180,9 @@ func LTypename(L *State, index int) string {
 
 //TODO: decide if we actually want this renamed
 func TypeError(L *State, narg int, tname string) int {
-	return int(C.luaL_typerror(L.s,C.int(narg),C.CString(tname)));
+	Ctname	:= C.CString(tname) 
+	defer C.free(unsafe.Pointer(Ctname))
+	return int(C.luaL_typerror(L.s,C.int(narg),Ctname))
 }
 
 func Unref(L *State, t int, ref int) {
