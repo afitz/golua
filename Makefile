@@ -42,7 +42,7 @@ all: install examples
 golua.o: golua.c
 	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -fPIC $(CFLAGS) -c golua.c -o golua.o
 
-genluadefs:
+lua_defs.go:
 	echo "package golua;" > lua_defs.go
 	echo "$(LUA_INCLUDE_DIRECTIVES)" "import \"C\"" >> lua_defs.go
 	echo "const (" >> lua_defs.go
