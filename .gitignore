@@ -6,11 +6,9 @@ _cgo_export.c
 _cgo_export.h
 _cgo_export.o
 _cgo_gotypes.go
-_cgo_import.6
 _cgo_import.c
 _cgo_main.c
 _cgo_main.o
-_go_.6
 _obj/
 golua.o
 lauxlib.cgo1.go
@@ -19,6 +17,5 @@ lauxlib.cgo2.o
 lua.cgo1.go
 lua.cgo2.c
 lua.cgo2.o
-lua_defs.cgo1.go
-lua_defs.cgo2.c
-lua_defs.cgo2.o
+*.[568]
+lua_defs.*
