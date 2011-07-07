@@ -4,40 +4,13 @@
 
 include $(GOROOT)/src/Make.inc
 
-CGO_CFLAGS+=-Ilua-5.1.4/src
+LUA_INCLUDE_DIR=/usr/include/lua5.1/
+LUA_LIB_DIR=/usr/lib/
+
+CGO_CFLAGS+=-I$(LUA_INCLUDE_DIR)
 CGO_DEPS=_cgo_export.o
-CGO_LDFLAGS+=-lm
+CGO_LDFLAGS+=-L$(LUA_LIB_DIR) -lm -llua5.1
 CGO_OFILES=\
-		   lua-5.1.4/src/lapi.o \
-		   lua-5.1.4/src/lauxlib.o \
-		   lua-5.1.4/src/lbaselib.o \
-		   lua-5.1.4/src/lcode.o \
-		   lua-5.1.4/src/ldblib.o \
-		   lua-5.1.4/src/ldebug.o \
-		   lua-5.1.4/src/ldo.o \
-		   lua-5.1.4/src/ldump.o \
-		   lua-5.1.4/src/lfunc.o \
-		   lua-5.1.4/src/lgc.o \
-		   lua-5.1.4/src/linit.o \
-		   lua-5.1.4/src/liolib.o \
-		   lua-5.1.4/src/llex.o \
-		   lua-5.1.4/src/lmathlib.o \
-		   lua-5.1.4/src/lmem.o \
-		   lua-5.1.4/src/loadlib.o \
-		   lua-5.1.4/src/lobject.o \
-		   lua-5.1.4/src/lopcodes.o \
-		   lua-5.1.4/src/loslib.o \
-		   lua-5.1.4/src/lparser.o \
-		   lua-5.1.4/src/lstate.o \
-		   lua-5.1.4/src/lstring.o \
-		   lua-5.1.4/src/lstrlib.o \
-		   lua-5.1.4/src/ltable.o \
-		   lua-5.1.4/src/ltablib.o \
-		   lua-5.1.4/src/ltm.o \
-		   lua-5.1.4/src/lundump.o \
-		   lua-5.1.4/src/lvm.o \
-		   lua-5.1.4/src/lzio.o \
-		   lua-5.1.4/src/print.o \
 		   golua.o \
 
 TARG=golua
@@ -55,7 +28,7 @@ CLEANFILES+=lua-5.1.4/src/*.o\
 			example/userdata\
 
 LUA_HEADERS=lua.h lauxlib.h lualib.h
-LUA_HEADER_FILES:=$(patsubst %,lua-5.1.4/src/%,$(LUA_HEADERS))
+LUA_HEADER_FILES:=$(patsubst %,$(LUA_INCLUDE_DIR)%,$(LUA_HEADERS))
 LUA_INCLUDE_DIRECTIVES:=$(patsubst %,//\#include <%>\n, $(LUA_HEADERS))
 
 include $(GOROOT)/src/Make.pkg
