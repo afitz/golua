@@ -5,8 +5,6 @@ package lua51
 import "C"
 
 import "unsafe"
-//TODO: remove
-import "fmt"
 
 
 
@@ -101,7 +99,6 @@ func golua_callgofunction(L interface{}, fid uint) int {
 func golua_gchook(L interface{}, id uint) int {
 	L1 := L.(*State);
 	L1.unregister(id);
-	fmt.Printf("GC id: %d\n",id);
 	return 0;
 }
 
@@ -362,6 +359,16 @@ func (L *State) PushThread() (isMain bool) {
 
 func (L *State) PushValue(index int) {
 	C.lua_pushvalue(L.s, C.int(index));
+}
+
+func (L *State) PushAny(z interface{}) {
+	switch v := z.(type) {
+		case string:  L.PushString(v)
+		case int:     L.PushInteger(v)
+		case float64: L.PushNumber(v)
+		case bool:    L.PushBoolean(v)
+		default:      L.PushNil()
+	}
 }
 
 func (L *State) RawEqual(index1 int, index2 int) bool {
