@@ -432,6 +432,13 @@ func (L *State) SetTable(index int) {
 	C.lua_settable(L.s, C.int(index));
 }
 
+func (L *State) SetTableAny(index int, key interface {}, value interface {}){
+	// don't forget about pushes while calling with relative index
+	L.PushAny(key)
+	L.PushAny(value)
+	L.SetTable(index)
+}
+
 func (L *State) SetTop(index int) {
 	C.lua_settop(L.s, C.int(index));
 }
