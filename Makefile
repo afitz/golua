@@ -72,8 +72,9 @@ golua.o: golua.c
 genluadefs:
 	echo "package golua;" > lua_defs.go
 	echo "$(LUA_INCLUDE_DIRECTIVES)" "import \"C\"" >> lua_defs.go
-#	echo "import \"C\"" >> lua_defs.go
-	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/const/' | sed 's/\([A-Z_][A-Z_]*\)[[:space:]]*.*/\1 = C.\1/'  >> lua_defs.go
+	echo "const (" >> lua_defs.go
+	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/  /' | sed 's/\([A-Z_][A-Z_]*\)[[:space:]]*.*/\1 = C.\1/'  >> lua_defs.go
+	echo ")" >> lua_defs.go
 
 examples: install
 	cd example && make
