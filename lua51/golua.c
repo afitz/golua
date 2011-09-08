@@ -123,7 +123,7 @@ int callback_panicf(lua_State* L)
 	unsigned int fid = lua_tointeger(L,-1);
 	lua_pop(L,1);
 	GoInterface* gi = clua_getgostate(L);
-	return golua_callpanicfunction(*gi,fid);
+	return callpanicfunction(*gi,fid);
 
 }
 
@@ -150,12 +150,12 @@ GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
 	//make a GoInterface with a wrapped C panicf or the original go panicf
 	if(pf == &callback_panicf)
 	{
-		return golua_idtointerface(old_id);
+		return idtointerface(old_id);
 	}
 	else
 	{
 		//TODO: technically UB, function ptr -> non function ptr
-		return golua_cfunctiontointerface((int*)pf);
+		return cfunctiontointerface((int*)pf);
 	}
 }
 
@@ -166,7 +166,7 @@ int clua_callluacfunc(lua_State* L, lua_CFunction f)
 
 void* allocwrapper(void* ud, void *ptr, size_t osize, size_t nsize)
 {
-	return (void*)golua_callallocf((uintptr)ud,(uintptr)ptr,osize,nsize);
+	return (void*)callAllocf((uintptr)ud,(uintptr)ptr,osize,nsize);
 }
 
 lua_State* clua_newstate(void* goallocf)
