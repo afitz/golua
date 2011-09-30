@@ -7,7 +7,7 @@ include $(GOROOT)/src/Make.inc
 CGO_OFILES+=golua.o
 
 ifndef LUA51_LIBNAME
-LUA51_LIBNAME=lua5.1
+LUA51_LIBNAME=$(shell pkg-config --print-provides lua | cut -d ' ' -f1)
 endif
 
 ifndef LUA51_INCLUDE_DIR
@@ -34,7 +34,7 @@ CLEANFILES+=lua_defs.go
 
 LUA_HEADERS=lua.h lauxlib.h lualib.h
 LUA_HEADER_FILES:=$(patsubst %,$(LUA51_INCLUDE_DIR)/%,$(LUA_HEADERS))
-LUA_INCLUDE_DIRECTIVES:=$(patsubst %,//\#include <%>\n, $(LUA_HEADERS))
+LUA_INCLUDE_DIRECTIVES:=$(patsubst %,\#include <%>\n, $(LUA_HEADERS))
 
 
 include $(GOROOT)/src/Make.pkg
@@ -48,7 +48,8 @@ golua.o: golua.c
 
 lua_defs.go:
 	echo "package lua51;" > lua_defs.go
-	echo "$(LUA_INCLUDE_DIRECTIVES)" "import \"C\"" >> lua_defs.go
-#	echo "import \"C\"" >> lua_defs.go
+	echo "/*" >> lua_defs.go
+	echo -e "$(LUA_INCLUDE_DIRECTIVES)" >> lua_defs.go
+	echo "*/" >> lua_defs.go
+	echo "import \"C\"" >> lua_defs.go
 	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/const/' | sed 's/\([A-Z_][A-Z_]*\)[\t ].*/\1 = C.\1/'  >> lua_defs.go
-
