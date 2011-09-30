@@ -1,8 +1,11 @@
 package lua51;
-//#include <lua.h>
- //#include <lauxlib.h>
- //#include <lualib.h>
- import "C"
+/*
+#include <lua.h>
+ #include <lauxlib.h>
+ #include <lualib.h>
+
+*/
+import "C"
 const LUA_VERSION = C.LUA_VERSION
 const LUA_RELEASE = C.LUA_RELEASE
 const LUA_VERSION_NUM = C.LUA_VERSION_NUM
