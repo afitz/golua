@@ -101,7 +101,6 @@ func golua_callgofunction(L interface{}, fid uint) int {
 func golua_gchook(L interface{}, id uint) int {
 	L1 := L.(*State);
 	L1.unregister(id);
-	fmt.Printf("GC id: %d\n",id);
 	return 0;
 }
 
