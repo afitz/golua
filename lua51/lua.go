@@ -105,20 +105,20 @@ func golua_gchook(L interface{}, id uint) int {
 	return 0;
 }
 
-//export callpanicfunction
-func callpanicfunction(L interface{}, id uint) int {
+//export golua_callpanicfunction
+func golua_callpanicfunction(L interface{}, id uint) int {
 	L1 := L.(*State);
 	f := L1.registry[id].(GoFunction);
 	return f(L1);
 }
 
-//export idtointerface
-func idtointerface(id uint) interface{} {
+//export golua_idtointerface
+func golua_idtointerface(id uint) interface{} {
 	return id;
 }
 
-//export cfunctiontointerface
-func cfunctiontointerface(f *uintptr) interface{} {
+//export golua_cfunctiontointerface
+func golua_cfunctiontointerface(f *uintptr) interface{} {
 	return f;
 }
 
@@ -156,8 +156,8 @@ func (L *State) NewUserdata(size uintptr) unsafe.Pointer {
 
 
 type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer;
-//export callAllocf
-func callAllocf(fp uintptr,	ptr uintptr,
+//export golua_callallocf
+func golua_callallocf(fp uintptr,	ptr uintptr,
 			    osize uint,			nsize uint) uintptr {
 	return uintptr((*((*Alloc)(unsafe.Pointer(fp))))(unsafe.Pointer(ptr),osize,nsize));
 }

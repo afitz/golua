@@ -128,7 +128,7 @@ int callback_panicf(lua_State* L)
 }
 
 //TODO: currently setting garbage when panicf set to null
-GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
+GoInterface* clua_atpanic(lua_State* L, unsigned int panicf_id)
 {
 	//get old panicfid
 	unsigned int old_id;
@@ -150,12 +150,12 @@ GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
 	//make a GoInterface with a wrapped C panicf or the original go panicf
 	if(pf == &callback_panicf)
 	{
-		return golua_idtointerface(old_id);
+	    return golua_idtointerface(old_id);
 	}
 	else
 	{
 		//TODO: technically UB, function ptr -> non function ptr
-		return golua_cfunctiontointerface((int*)pf);
+	    return golua_cfunctiontointerface((int*)pf);
 	}
 }
 
