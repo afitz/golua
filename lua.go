@@ -5,10 +5,6 @@ package lua51
 import "C"
 
 import "unsafe"
-//TODO: remove
-import "fmt"
-
-
 
 
 //like lua_Writer, but as p will contain capacity, not needed as separate param
