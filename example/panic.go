@@ -1,6 +1,6 @@
 package main
 
-import lua "golua/lua"
+import "github.com/aarzilli/golua/lua"
 import "fmt"
 
 func test(L *lua.State) int {
@@ -23,7 +23,7 @@ func main() {
 		if currentPanicf != nil {
 			return currentPanicf(L1);
 		}
-		
+
 		return 1;
 	}
 

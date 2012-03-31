@@ -1,6 +1,6 @@
 package main
 
-import lua "golua/lua"
+import "github.com/aarzilli/golua/lua"
 import "unsafe"
 import "fmt"
 
