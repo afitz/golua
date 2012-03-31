@@ -1,4 +1,4 @@
-package lua51
+package lua
 
 //#include <lua.h>
 //#include <lauxlib.h>
@@ -15,14 +15,14 @@ import "unsafe"
 
 func ArgCheck(L *State, cond bool, narg int, extramsg string) {
 	if cond {
-		Cextramsg	:= C.CString(extramsg) 
+		Cextramsg	:= C.CString(extramsg)
 		defer C.free(unsafe.Pointer(Cextramsg))
 		C.luaL_argerror(L.s, C.int(narg), Cextramsg)
 	}
 }
 
 func ArgError(L *State, narg int, extramsg string) int {
-	Cextramsg	:= C.CString(extramsg) 
+	Cextramsg	:= C.CString(extramsg)
 	defer C.free(unsafe.Pointer(Cextramsg))
 	return int(C.luaL_argerror(L.s,C.int(narg),Cextramsg));
 }
@@ -32,7 +32,7 @@ func ArgError(L *State, narg int, extramsg string) int {
 //luaL_buffinit
 
 func CallMeta(L *State, obj int, e string) int {
-	Ce	:= C.CString(e) 
+	Ce	:= C.CString(e)
 	defer C.free(unsafe.Pointer(Ce))
 	return int(C.luaL_callmeta(L.s,C.int(obj),Ce))
 }
@@ -64,8 +64,8 @@ func CheckType(L *State, narg int, t int) {
 }
 
 func CheckUdata(L *State, narg int, tname string) unsafe.Pointer {
-	Ctname	:= C.CString(tname) 
-	defer C.free(unsafe.Pointer(Ctname)) 
+	Ctname	:= C.CString(tname)
+	defer C.free(unsafe.Pointer(Ctname))
 	return unsafe.Pointer(C.luaL_checkudata(L.s,C.int(narg),Ctname))
 }
 
@@ -93,50 +93,50 @@ func FmtError(L *State, fmt string, args...interface{}) int {
 
 //returns false if no such metatable or no such field
 func GetMetaField(L *State, obj int, e string) bool {
-	Ce	:= C.CString(e) 
-	defer C.free(unsafe.Pointer(Ce)) 
+	Ce	:= C.CString(e)
+	defer C.free(unsafe.Pointer(Ce))
 	return C.luaL_getmetafield(L.s,C.int(obj),Ce) != 0;
 }
 
 //TODO: rename better... clashes with lua_getmetatable
 func LGetMetaTable(L *State, tname string) {
-	Ctname	:= C.CString(tname) 
-	defer C.free(unsafe.Pointer(Ctname)) 
+	Ctname	:= C.CString(tname)
+	defer C.free(unsafe.Pointer(Ctname))
 	C.lua_getfield(L.s,LUA_REGISTRYINDEX,Ctname);
 }
 
 func GSub(L *State, s string, p string, r string) string {
-	Cs	:= C.CString(s) 
-	Cp	:= C.CString(p) 
-	Cr	:= C.CString(r) 
+	Cs	:= C.CString(s)
+	Cp	:= C.CString(p)
+	Cr	:= C.CString(r)
 	defer func(){
 		 C.free(unsafe.Pointer(Cs))
 		 C.free(unsafe.Pointer(Cp))
 		 C.free(unsafe.Pointer(Cr))
 	}()
 
-	return C.GoString(C.luaL_gsub(L.s, Cs, Cp, Cr)) 
+	return C.GoString(C.luaL_gsub(L.s, Cs, Cp, Cr))
 }
 
 //TODO: luaL_loadbuffer
 
 
 func (L *State) LoadFile(filename string) int {
-	Cfilename	:= C.CString(filename) 
-	defer C.free(unsafe.Pointer(Cfilename)) 
+	Cfilename	:= C.CString(filename)
+	defer C.free(unsafe.Pointer(Cfilename))
 	return int(C.luaL_loadfile(L.s,Cfilename));
 }
 
 func (L *State) LoadString(s string) int {
-	Cs	:= C.CString(s) 
-	defer C.free(unsafe.Pointer(Cs)) 
+	Cs	:= C.CString(s)
+	defer C.free(unsafe.Pointer(Cs))
 	return int(C.luaL_loadstring(L.s,Cs))
 }
 
 //returns false if registry already contains key tname
 func (L *State) NewMetaTable(tname string) bool {
-	Ctname	:= C.CString(tname) 
-	defer C.free(unsafe.Pointer(Ctname)) 
+	Ctname	:= C.CString(tname)
+	defer C.free(unsafe.Pointer(Ctname))
 	return C.luaL_newmetatable(L.s, Ctname) != 0;
 }
 

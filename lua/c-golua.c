@@ -1,6 +1,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include <stdint.h>
 #include "_cgo_export.h"
 //metatables to register:
 //	GoLua.GoInterface
@@ -25,7 +26,7 @@ GoInterface* clua_getgostate(lua_State* L)
 	lua_gettable(L, LUA_REGISTRYINDEX);
 	GoInterface* gip = lua_touserdata(L,-1);
 	lua_pop(L,1);
-	return gip;	
+	return gip;
 }
 
 
@@ -40,7 +41,7 @@ int callback_function(lua_State* L)
 }
 
 //wrapper for gchook
-int gchook_wrapper(lua_State* L) 
+int gchook_wrapper(lua_State* L)
 {
 	unsigned int* fid = clua_checkgofunction(L,-1); //TODO: this will error
 	GoInterface* gi = clua_getgostate(L);
@@ -65,14 +66,14 @@ void clua_pushgofunction(lua_State* L, unsigned int fid)
 	lua_setmetatable(L, -2);
 }
 
-void clua_pushlightinteger(lua_State* L, unsigned int n)
+void clua_pushlightinteger(lua_State* L, int n)
 {
-  lua_pushlightuserdata(L, (void*)n);
+  lua_pushlightuserdata(L, (void*)(uintptr_t)n);
 }
 
-int clua_tolightinteger(lua_State *L, unsigned int index)
+uintptr_t clua_tolightinteger(lua_State *L, unsigned int index)
 {
-  return (int)lua_touserdata(L, index);
+  return (uintptr_t)lua_touserdata(L, index);
 }
 
 void clua_setgostate(lua_State* L, GoInterface gi)
@@ -84,7 +85,7 @@ void clua_setgostate(lua_State* L, GoInterface gi)
 	gip->t = gi.t;
 	//set into registry table
 	lua_settable(L,LUA_REGISTRYINDEX);
-	
+
 }
 
 
@@ -155,7 +156,7 @@ GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
 	else
 	{
 		//TODO: technically UB, function ptr -> non function ptr
-		return golua_cfunctiontointerface((int*)pf);
+		return golua_cfunctiontointerface((uintptr *)pf);
 	}
 }
 

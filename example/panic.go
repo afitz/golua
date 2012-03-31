@@ -1,6 +1,6 @@
 package main
 
-import lua "lua51"
+import lua "golua/lua"
 import "fmt"
 
 func test(L *lua.State) int {
@@ -19,8 +19,12 @@ func main() {
 	currentPanicf := L.AtPanic(nil);
 	currentPanicf = L.AtPanic(currentPanicf);
 	newPanic := func(L1 *lua.State) int {
-		fmt.Println("I AM PANICKING!!!");
-		return currentPanicf(L1);
+		fmt.Println("I AM PANICKING!!! %v", currentPanicf);
+		if currentPanicf != nil {
+			return currentPanicf(L1);
+		}
+		
+		return 1;
 	}
 
 	L.AtPanic(newPanic);
