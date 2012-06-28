@@ -262,3 +262,7 @@ void *testudata(lua_State *L, int ud, const char *tname) {
 int clua_isgofunction(lua_State *L, int n) {
   return testudata(L, n, MT_GOFUNCTION) != NULL;
 }
+
+int clua_isgointerface(lua_State *L, int n) {
+  return testudata(L, n, MT_GOINTERFACE) != NULL;
+}

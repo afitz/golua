@@ -27,3 +27,4 @@ void clua_openos(lua_State* L);
 void clua_setexecutionlimit(lua_State* L, int n);
 
 int clua_isgofunction(lua_State *L, int n);
+int clua_isgointerface(lua_State *L, int n);
