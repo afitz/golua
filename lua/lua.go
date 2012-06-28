@@ -80,23 +80,27 @@ func (L *State) unregister(fid uint) {
 	}
 }
 
-func (L *State) PushGoFunction(f GoFunction) {
+func (L *State) PushGoFunction(f LuaGoFunction) {
 	fid := L.register(f);
 	C.clua_pushgofunction(L.s,C.uint(fid));
 }
 
-
-func (L *State) PushLightInteger(n int) {
-	C.clua_pushlightinteger(L.s, C.int(n))
+func (L *State) PushGoInterface(iface interface{}) {
+	iid := L.register(iface);
+	C.clua_pushgointerface(L.s, C.uint(iid));
 }
+
+/*func (L *State) PushLightInteger(n int) {
+	C.clua_pushlightinteger(L.s, C.int(n))
+}*/
 
 
 //push pointer by value, as a value - we don't impact lifetime
 func (L *State) PushLightUserdata(ud *interface{}) {
 	//push
 	C.lua_pushlightuserdata(L.s,unsafe.Pointer(ud));
-
 }
+
 /*
 //TODO:
 //push pointer as full userdata - mem is go owned, but we
@@ -111,7 +115,7 @@ func (L *State) NewUserdata(size uintptr) unsafe.Pointer {
 	return unsafe.Pointer(C.lua_newuserdata(L.s, C.size_t(size)));
 }
 
-func (L *State) AtPanic(panicf GoFunction) (oldpanicf GoFunction) {
+func (L *State) AtPanic(panicf LuaGoFunction) (oldpanicf LuaGoFunction) {
 	fid := uint(0);
 	if panicf != nil {
 		fid = L.register(panicf);
@@ -119,7 +123,7 @@ func (L *State) AtPanic(panicf GoFunction) (oldpanicf GoFunction) {
 	oldres := interface{}(C.clua_atpanic(L.s,C.uint(fid)));
 	switch i := oldres.(type) {
 	case C.uint:
-		f := L.registry[uint(i)].(GoFunction);
+		f := L.registry[uint(i)].(LuaGoFunction);
 		//free registry entry
 		L.unregister(uint(i));
 		return f;
@@ -154,7 +158,7 @@ func (L *State) CreateTable(narr int, nrec int) {
 }
 
 //CPcall replacement
-func (L *State) GoPCall(fun GoFunction, ud interface{}) int {
+func (L *State) GoPCall(fun LuaGoFunction, ud interface{}) int {
 	//TODO: need to emulate by pushing a c closure as in pushgofunction
 	return 0;
 }
@@ -198,11 +202,8 @@ func (L *State) IsBoolean(index int) bool {
 }
 
 func (L *State) IsGoFunction(index int) bool {
-	//TODO:go function is now a userdatum, not a c function, so this will not work
-	return C.lua_iscfunction(L.s, C.int(index)) == 1
+	return C.clua_isgofunction(L.s, C.int(index)) != 0
 }
-
-//TODO: add iscfunction
 
 func (L *State) IsFunction(index int) bool {
 	return int(C.lua_type(L.s, C.int(index))) == LUA_TFUNCTION
@@ -336,7 +337,7 @@ func (L *State) RawSeti(index int, n int) {
 	C.lua_rawseti(L.s, C.int(index), C.int(n));
 }
 
-func (L *State) Register(name string, f GoFunction) {
+func (L *State) Register(name string, f LuaGoFunction) {
 	L.PushGoFunction(f);
 	L.SetGlobal(name);
 }
@@ -393,9 +394,9 @@ func (L *State) ToBoolean(index int) bool {
 	return C.lua_toboolean(L.s, C.int(index)) != 0;
 }
 
-func (L *State) ToGoFunction(index int) (f GoFunction) {
+func (L *State) ToGoFunction(index int) (f LuaGoFunction) {
 	fid := C.clua_togofunction(L.s,C.int(index))
-	return L.registry[fid].(GoFunction);
+	return L.registry[fid].(LuaGoFunction);
 }
 
 func (L *State) ToString(index int) string {
@@ -425,9 +426,9 @@ func (L *State) ToUserdata(index int) unsafe.Pointer {
 	return unsafe.Pointer(C.lua_touserdata(L.s,C.int(index)));
 }
 
-func (L *State) ToLightInteger(index int) int {
+/*func (L *State) ToLightInteger(index int) int {
 	return int(C.clua_tolightinteger(L.s, C.int(index)))
-}
+}*/
 
 func (L *State) Type(index int) int {
 	return int(C.lua_type(L.s, C.int(index)));

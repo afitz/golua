@@ -160,8 +160,8 @@ func (L *State) OptNumber(narg int, d float64) float64 {
 
 func (L *State) OptString(narg int, d string) string {
 	var length C.size_t;
-	Cd	:= C.CString(d) 
-	defer C.free(unsafe.Pointer(Cd)) 
+	Cd := C.CString(d)
+	defer C.free(unsafe.Pointer(Cd))
 	return C.GoString(C.luaL_optlstring(L.s,C.int(narg),Cd,&length));
 }
 
@@ -180,7 +180,7 @@ func LTypename(L *State, index int) string {
 
 //TODO: decide if we actually want this renamed
 func TypeError(L *State, narg int, tname string) int {
-	Ctname	:= C.CString(tname) 
+	Ctname	:= C.CString(tname)
 	defer C.free(unsafe.Pointer(Ctname))
 	return int(C.luaL_typerror(L.s,C.int(narg),Ctname))
 }

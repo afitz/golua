@@ -8,11 +8,7 @@ type Userdata struct {
 	a,b int
 }
 
-func main() {
-	var L *lua.State;
-	L = lua.NewState();
-	L.OpenLibs();
-
+func userDataProper(L *lua.State) {
 	rawptr := L.NewUserdata(uintptr(unsafe.Sizeof(Userdata{})));
 	var ptr *Userdata;
 	ptr = (*Userdata)(rawptr);
@@ -25,4 +21,41 @@ func main() {
 	ptr2 := (*Userdata)(rawptr2);
 
 	fmt.Println(ptr2);
+}
+
+func example_function(L *lua.State) int {
+	fmt.Println("Heeeeelllllooooooooooo nuuurse!!!!");
+	return 0
+}
+
+func goDefinedFunctions(L *lua.State) {
+	/* example_function is registered inside Lua VM */
+	L.Register("example_function", example_function)
+
+	/* This code demonstrates checking that a value on the stack is a go function */
+	L.CheckStack(1)
+	L.GetGlobal("example_function")
+	if !L.IsGoFunction(-1) {
+		panic("Not go function")
+	}
+	L.Pop(1)
+
+	/* We call example_function from inside Lua VM */
+	L.DoString("example_function()")
+}
+
+func main() {
+	var L *lua.State;
+	L = lua.NewState();
+	L.OpenLibs();
+
+	/*
+	This function stores a go object inside Lua VM
+	*/
+	userDataProper(L)
+
+	/*
+	This function demonstrates exposing a function implemented in go to interpreted Lua code
+	*/
+	goDefinedFunctions(L);
 }

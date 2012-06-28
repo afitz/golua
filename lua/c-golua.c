@@ -8,15 +8,25 @@
 //  GoLua.GoFunction
 //
 
+#define MT_GOFUNCTION "GoLua.GoFunction"
+#define MT_GOINTERFACE "GoLua.GoInterface"
+
 static const char GoStateRegistryKey = 'k'; //golua registry key
 static const char PanicFIDRegistryKey = 'k';
 
 
-unsigned int* clua_checkgofunction(lua_State* L, int index)
+unsigned int* clua_checkgosomething(lua_State* L, int index, const char *desired_metatable)
 {
-	unsigned int* fid = (unsigned int*)luaL_checkudata(L,index,"GoLua.GoFunction");
-	luaL_argcheck(L, fid != NULL, index, "'GoFunction' expected");
-	return fid;
+	if (desired_metatable != NULL) {
+		unsigned int* fid = (unsigned int*)luaL_checkudata(L,index, desired_metatable);
+		luaL_argcheck(L, fid != NULL, index, "Metatable not what expected");
+		return fid;
+	} else {
+		unsigned int *sid = (unsigned int *)luaL_checkudata(L, index, MT_GOFUNCTION);
+		if (sid == NULL) sid = (unsigned int *)luaL_checkudata(L, index, MT_GOINTERFACE);
+		luaL_argcheck(L, sid != NULL, index, "Metatable not what expected");
+		return sid;
+	}
 }
 
 GoInterface* clua_getgostate(lua_State* L)
@@ -33,7 +43,7 @@ GoInterface* clua_getgostate(lua_State* L)
 //wrapper for callgofunction
 int callback_function(lua_State* L)
 {
-	unsigned int *fid = clua_checkgofunction(L,1);
+	unsigned int *fid = clua_checkgosomething(L, 1, MT_GOFUNCTION);
 	GoInterface* gi = clua_getgostate(L);
 	//remove the go function from the stack (to present same behavior as lua_CFunctions)
 	lua_remove(L,1);
@@ -43,7 +53,7 @@ int callback_function(lua_State* L)
 //wrapper for gchook
 int gchook_wrapper(lua_State* L)
 {
-	unsigned int* fid = clua_checkgofunction(L,-1); //TODO: this will error
+	unsigned int* fid = clua_checkgosomething(L, -1, NULL); //TODO: this will error
 	GoInterface* gi = clua_getgostate(L);
 	if(fid != NULL)
 		return golua_gchook(*gi,*fid);
@@ -55,25 +65,28 @@ int gchook_wrapper(lua_State* L)
 
 unsigned int clua_togofunction(lua_State* L, int index)
 {
-	return *(clua_checkgofunction(L,index));
+	return *(clua_checkgosomething(L, index, MT_GOFUNCTION));
+}
+
+unsigned int clua_togointerface(lua_State *L, int index)
+{
+	return *(clua_checkgosomething(L, index, MT_GOINTERFACE));
 }
 
 void clua_pushgofunction(lua_State* L, unsigned int fid)
 {
-	unsigned int* fidptr = (unsigned int*)lua_newuserdata(L, sizeof(unsigned int));
+	unsigned int* fidptr = (unsigned int *)lua_newuserdata(L, sizeof(unsigned int));
 	*fidptr = fid;
-	luaL_getmetatable(L, "GoLua.GoFunction");
+	luaL_getmetatable(L, MT_GOFUNCTION);
 	lua_setmetatable(L, -2);
 }
 
-void clua_pushlightinteger(lua_State* L, int n)
+void clua_pushgointerface(lua_State* L, unsigned int iid)
 {
-  lua_pushlightuserdata(L, (void*)(GoUintptr)n);
-}
-
-GoUintptr clua_tolightinteger(lua_State *L, unsigned int index)
-{
-  return (GoUintptr)lua_touserdata(L, index);
+	unsigned int* iidptr = (unsigned int *)lua_newuserdata(L, sizeof(unsigned int));
+	*iidptr = iid;
+	luaL_getmetatable(L, MT_GOINTERFACE);
+	lua_setmetatable(L,-2);
 }
 
 void clua_setgostate(lua_State* L, GoInterface gi)
@@ -89,31 +102,30 @@ void clua_setgostate(lua_State* L, GoInterface gi)
 }
 
 
-void clua_pushgointerface(lua_State* L, GoInterface gi)
-{
-	GoInterface* iptr = (GoInterface*)lua_newuserdata(L, sizeof(GoInterface));
-	iptr->v = gi.v;
-	iptr->t = gi.t;
-	luaL_getmetatable(L, "GoLua.GoInterface");
-	lua_setmetatable(L,-2);
-}
-
 void clua_initstate(lua_State* L)
 {
 	/* create the GoLua.GoFunction metatable */
-	luaL_newmetatable(L,"GoLua.GoFunction");
-	//pushkey
+	luaL_newmetatable(L,MT_GOFUNCTION);
+
+	// gofunction_metatable[__call] = &callback_function
 	lua_pushliteral(L,"__call");
-	//push value
 	lua_pushcfunction(L,&callback_function);
-	//t[__call] = &callback_function
 	lua_settable(L,-3);
-	//push key
+
+	// gofunction_metatable[__gc] = &gchook_wrapper
 	lua_pushliteral(L,"__gc");
-	//pushvalue
 	lua_pushcfunction(L,&gchook_wrapper);
 	lua_settable(L,-3);
 	lua_pop(L,1);
+
+	luaL_newmetatable(L, MT_GOINTERFACE);
+
+	// gointerface_metatable[__gc] = &gchook_wrapper
+	lua_pushliteral(L, "__gc");
+	lua_pushcfunction(L, &gchook_wrapper);
+	lua_settable(L, -3);
+
+	lua_pop(L, 1);
 }
 
 
@@ -232,3 +244,21 @@ void clua_setexecutionlimit(lua_State* L, int n) {
   lua_sethook(L, &clua_hook_function, LUA_MASKCOUNT, n);
 }
 
+/* taken from lua5.2 source */
+void *testudata(lua_State *L, int ud, const char *tname) {
+  void *p = lua_touserdata(L, ud);
+  if (p != NULL) {  /* value is a userdata? */
+    if (lua_getmetatable(L, ud)) {  /* does it have a metatable? */
+      luaL_getmetatable(L, tname);  /* get correct metatable */
+      if (!lua_rawequal(L, -1, -2))  /* not the same? */
+        p = NULL;  /* value is a userdata with wrong metatable */
+      lua_pop(L, 2);  /* remove both metatables */
+      return p;
+    }
+  }
+  return NULL;  /* value is not a userdata with a metatable */
+}
+
+int clua_isgofunction(lua_State *L, int n) {
+  return testudata(L, n, MT_GOFUNCTION) != NULL;
+}

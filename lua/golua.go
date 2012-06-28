@@ -10,14 +10,15 @@ import "C"
 
 import "unsafe"
 
-type GoFunction func(*State) int;
 type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer;
+
+// this is the type of go function that can be registered as lua functions
+type LuaGoFunction func(L *State) int;
 
 //wrapper to keep cgo from complaining about incomplete ptr type
 //export State
 type State struct {
 	s *C.lua_State;
-	//funcs []GoFunction;
 	registry []interface{};
 	//freelist for funcs indices, to allow for freeing
 	freeIndices []uint;
@@ -26,7 +27,7 @@ type State struct {
 //export golua_callgofunction
 func golua_callgofunction(L interface{}, fid uint) int {
 	L1 := L.(*State);
-	f := L1.registry[fid].(GoFunction);
+	f := L1.registry[fid].(LuaGoFunction);
 	return f(L1);
 }
 
@@ -40,7 +41,7 @@ func golua_gchook(L interface{}, id uint) int {
 //export golua_callpanicfunction
 func golua_callpanicfunction(L interface{}, id uint) int {
 	L1 := L.(*State);
-	f := L1.registry[id].(GoFunction);
+	f := L1.registry[id].(LuaGoFunction);
 	return f(L1);
 }
 
