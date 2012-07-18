@@ -51,13 +51,10 @@ int callback_function(lua_State* L)
 //wrapper for gchook
 int gchook_wrapper(lua_State* L)
 {
-	unsigned int* fid = clua_checkgosomething(L, -1, NULL); //TODO: this will error
+	unsigned int* fid = clua_checkgosomething(L, -1, NULL);
 	GoInterface* gi = clua_getgostate(L);
 	if(fid != NULL)
 		return golua_gchook(*gi,*fid);
-	printf("GCHook failed\n");
-	//TODO: try udata or whatever, after impl
-
 	return 0;
 }
 
@@ -224,16 +221,16 @@ GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id)
 	unsigned int old_id;
 	lua_pushlightuserdata(L, (void*)&PanicFIDRegistryKey);
 	lua_gettable(L,LUA_REGISTRYINDEX);
-	if(lua_isnil(L,-1) == 0)
+	if(lua_isnil(L, -1) == 0)
 		old_id = lua_tointeger(L,-1);
-	lua_pop(L,1);
+	lua_pop(L, 1);
 
 	//set registry key for function id of go panic function
-	lua_pushlightuserdata(L,(void*)&PanicFIDRegistryKey);
+	lua_pushlightuserdata(L, (void*)&PanicFIDRegistryKey);
 	//push id value
-	lua_pushinteger(L,panicf_id);
+	lua_pushinteger(L, panicf_id);
 	//set into registry table
-	lua_settable(L,LUA_REGISTRYINDEX);
+	lua_settable(L, LUA_REGISTRYINDEX);
 
 	//now set the panic function
 	lua_CFunction pf = lua_atpanic(L,&callback_panicf);

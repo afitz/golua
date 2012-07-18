@@ -91,24 +91,11 @@ func (L *State) PushGoStruct(iface interface{}) {
 	C.clua_pushgostruct(L.s, C.uint(iid))
 }
 
-/*func (L *State) PushLightInteger(n int) {
-	C.clua_pushlightinteger(L.s, C.int(n))
-}*/
-
 //push pointer by value, as a value - we don't impact lifetime
 func (L *State) PushLightUserdata(ud *interface{}) {
 	//push
 	C.lua_pushlightuserdata(L.s, unsafe.Pointer(ud))
 }
-
-/*
-//TODO:
-//push pointer as full userdata - mem is go owned, but we
-//make a guarantee that lifetime will outlast lua lifetime
-func PushUserdata(L *State, ud interface{}) {
-
-}
-*/
 
 //old style
 func (L *State) NewUserdata(size uintptr) unsafe.Pointer {
@@ -157,15 +144,14 @@ func (L *State) CreateTable(narr int, nrec int) {
 	C.lua_createtable(L.s, C.int(narr), C.int(nrec))
 }
 
-//CPcall replacement
-func (L *State) GoPCall(fun LuaGoFunction, ud interface{}) int {
-	//TODO: need to emulate by pushing a c closure as in pushgofunction
+//TODO: data be a slice?
+func (L *State) Dump(writer Writer, data interface{}) int {
+	//TODO: Implement Dump
 	return 0
 }
 
-//TODO: data be a slice?
-func (L *State) Dump(writer Writer, data interface{}) int {
-	//TODO:
+func (L *State) Load(reader Reader, data interface{}, chunkname string) int {
+	//TODO: Implement Load
 	return 0
 }
 
@@ -239,19 +225,8 @@ func (L *State) LessThan(index1, index2 int) bool {
 	return C.lua_lessthan(L.s, C.int(index1), C.int(index2)) == 1
 }
 
-func (L *State) Load(reader Reader, data interface{}, chunkname string) int {
-	//TODO:
-	return 0
-}
-
-//NOTE: lua_newstate becomes NewStateAlloc whereas
-//		luaL_newstate becomes NewState
 func NewStateAlloc(f Alloc) *State {
-	//TODO: implement a newState function which will initialize a State
-	//		call with result from C.lua_newstate for the s initializer
-	//ls := lua_newstate(
 	ls := C.clua_newstate(unsafe.Pointer(&f))
-	//ls := clua_newstate(
 	return newState(ls)
 }
 
@@ -280,6 +255,7 @@ func (L *State) PCall(nargs int, nresults int, errfunc int) int {
 }
 
 func (L *State) Pop(n int) {
+	//Why is this implemented this way? I don't get it...
 	//C.lua_pop(L.s, C.int(n));
 	C.lua_settop(L.s, C.int(-n-1))
 }
@@ -402,6 +378,11 @@ func (L *State) ToGoFunction(index int) (f LuaGoFunction) {
 	return L.registry[fid].(LuaGoFunction)
 }
 
+func (L *State) ToGoStruct(index int) (f interface{}) {
+	fid := C.clua_togostruct(L.s, C.int(index))
+	return L.registry[fid]
+}
+
 func (L *State) ToString(index int) string {
 	var size C.size_t
 	//C.GoString(C.lua_tolstring(L.s, C.int(index), &size));
@@ -428,10 +409,6 @@ func (L *State) ToThread(index int) *State {
 func (L *State) ToUserdata(index int) unsafe.Pointer {
 	return unsafe.Pointer(C.lua_touserdata(L.s, C.int(index)))
 }
-
-/*func (L *State) ToLightInteger(index int) int {
-	return int(C.clua_tolightinteger(L.s, C.int(index)))
-}*/
 
 func (L *State) Type(index int) int {
 	return int(C.lua_type(L.s, C.int(index)))
