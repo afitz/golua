@@ -3,10 +3,6 @@
 #include <lualib.h>
 #include <stdint.h>
 #include "_cgo_export.h"
-//metatables to register:
-//	GoLua.GoInterface
-//  GoLua.GoFunction
-//
 
 #define MT_GOFUNCTION "GoLua.GoFunction"
 #define MT_GOINTERFACE "GoLua.GoInterface"
@@ -14,14 +10,16 @@
 static const char GoStateRegistryKey = 'k'; //golua registry key
 static const char PanicFIDRegistryKey = 'k';
 
-
 unsigned int* clua_checkgosomething(lua_State* L, int index, const char *desired_metatable)
 {
-	if (desired_metatable != NULL) {
+	if (desired_metatable != NULL)
+	{
 		unsigned int* fid = (unsigned int*)luaL_checkudata(L,index, desired_metatable);
 		luaL_argcheck(L, fid != NULL, index, "Metatable not what expected");
 		return fid;
-	} else {
+	}
+	else
+	{
 		unsigned int *sid = (unsigned int *)luaL_checkudata(L, index, MT_GOFUNCTION);
 		if (sid == NULL) sid = (unsigned int *)luaL_checkudata(L, index, MT_GOINTERFACE);
 		luaL_argcheck(L, sid != NULL, index, "Metatable not what expected");
@@ -103,62 +101,72 @@ void clua_setgostate(lua_State* L, GoInterface gi)
 /* called when lua code attempts to access a field of a published go object */
 int interface_index_callback(lua_State *L)
 {
-  unsigned int *iid = clua_checkgosomething(L, 1, MT_GOINTERFACE);
-  if (iid == NULL) {
-    lua_pushnil(L);
-    return 1;
-  }
+	unsigned int *iid = clua_checkgosomething(L, 1, MT_GOINTERFACE);
+	if (iid == NULL)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
 
-  char *field_name = (char *)lua_tostring(L, 2);
-  if (field_name == NULL) {
-    lua_pushnil(L);
-    return 1;
-  }
+	char *field_name = (char *)lua_tostring(L, 2);
+	if (field_name == NULL)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
 
-  GoInterface* gi = clua_getgostate(L);
+	GoInterface* gi = clua_getgostate(L);
 
-  int r = golua_interface_index_callback(*gi, *iid, field_name);
+	int r = golua_interface_index_callback(*gi, *iid, field_name);
 
-  lua_remove(L, 2);
-  lua_remove(L, 1);
+	lua_remove(L, 2);
+	lua_remove(L, 1);
 
-  if (r < 0) {
-    lua_error(L);
-    return 0;
-  } else {
-    return r;
-  }
+	if (r < 0)
+	{
+		lua_error(L);
+		return 0;
+	}
+	else
+	{
+		return r;
+	}
 }
 
 /* called when lua code attempts to set a field of a published go object */
 int interface_newindex_callback(lua_State *L)
 {
-  unsigned int *iid = clua_checkgosomething(L, 1, MT_GOINTERFACE);
-  if (iid == NULL) {
-    lua_pushnil(L);
-    return 1;
-  }
+	unsigned int *iid = clua_checkgosomething(L, 1, MT_GOINTERFACE);
+	if (iid == NULL)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
 
-  char *field_name = (char *)lua_tostring(L, 2);
-  if (field_name == NULL) {
-    lua_pushnil(L);
-    return 1;
-  }
+	char *field_name = (char *)lua_tostring(L, 2);
+	if (field_name == NULL)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
 
-  GoInterface* gi = clua_getgostate(L);
+	GoInterface* gi = clua_getgostate(L);
 
-  int r = golua_interface_newindex_callback(*gi, *iid, field_name);
+	int r = golua_interface_newindex_callback(*gi, *iid, field_name);
 
-  lua_remove(L, 3);
-  lua_remove(L, 2);
-  lua_remove(L, 1);
+	lua_remove(L, 3);
+	lua_remove(L, 2);
+	lua_remove(L, 1);
 
-  if (r < 0) {
-    lua_error(L);
-    return 0;
-  } else {
-    return r;
-  }
+	if (r < 0)
+	{
+		lua_error(L);
+		return 0;
+	}
+	else
+	{
+		return r;
+	}
 }
 
 void clua_initstate(lua_State* L)
@@ -261,77 +269,91 @@ void clua_setallocf(lua_State* L, void* goallocf)
 	lua_setallocf(L,&allocwrapper,goallocf);
 }
 
-void clua_openbase(lua_State* L){
+void clua_openbase(lua_State* L)
+{
 	lua_pushcfunction(L,&luaopen_base);
 	lua_pushstring(L,"");
 	lua_call(L, 1, 0);
 }
 
-void clua_openio(lua_State* L){
+void clua_openio(lua_State* L)
+{
 	lua_pushcfunction(L,&luaopen_io);
 	lua_pushstring(L,"io");
 	lua_call(L, 1, 0);
 }
 
-void clua_openmath(lua_State* L){
+void clua_openmath(lua_State* L)
+{
 	lua_pushcfunction(L,&luaopen_math);
 	lua_pushstring(L,"math");
 	lua_call(L, 1, 0);
 }
 
-void clua_openpackage(lua_State* L){
+void clua_openpackage(lua_State* L)
+{
 	lua_pushcfunction(L,&luaopen_package);
 	lua_pushstring(L,"package");
 	lua_call(L, 1, 0);
 }
 
-void clua_openstring(lua_State* L){
+void clua_openstring(lua_State* L)
+{
 	lua_pushcfunction(L,&luaopen_string);
 	lua_pushstring(L,"string");
 	lua_call(L, 1, 0);
 }
 
-void clua_opentable(lua_State* L){
+void clua_opentable(lua_State* L)
+{
 	lua_pushcfunction(L,&luaopen_table);
 	lua_pushstring(L,"table");
 	lua_call(L, 1, 0);
 }
 
-void clua_openos(lua_State* L){
+void clua_openos(lua_State* L)
+{
 	lua_pushcfunction(L,&luaopen_os);
 	lua_pushstring(L,"os");
 	lua_call(L, 1, 0);
 }
 
-void clua_hook_function(lua_State *L, lua_Debug *ar) {
-  lua_checkstack(L, 2);
-  lua_pushstring(L, "Lua execution quantum exceeded");
-  lua_error(L);
+void clua_hook_function(lua_State *L, lua_Debug *ar)
+{
+	lua_checkstack(L, 2);
+	lua_pushstring(L, "Lua execution quantum exceeded");
+	lua_error(L);
 }
 
-void clua_setexecutionlimit(lua_State* L, int n) {
-  lua_sethook(L, &clua_hook_function, LUA_MASKCOUNT, n);
+void clua_setexecutionlimit(lua_State* L, int n)
+{
+	lua_sethook(L, &clua_hook_function, LUA_MASKCOUNT, n);
 }
 
 /* taken from lua5.2 source */
-void *testudata(lua_State *L, int ud, const char *tname) {
-  void *p = lua_touserdata(L, ud);
-  if (p != NULL) {  /* value is a userdata? */
-    if (lua_getmetatable(L, ud)) {  /* does it have a metatable? */
-      luaL_getmetatable(L, tname);  /* get correct metatable */
-      if (!lua_rawequal(L, -1, -2))  /* not the same? */
-        p = NULL;  /* value is a userdata with wrong metatable */
-      lua_pop(L, 2);  /* remove both metatables */
-      return p;
-    }
-  }
-  return NULL;  /* value is not a userdata with a metatable */
+void *testudata(lua_State *L, int ud, const char *tname)
+{
+	void *p = lua_touserdata(L, ud);
+	if (p != NULL)
+	{  /* value is a userdata? */
+		if (lua_getmetatable(L, ud))
+		{  /* does it have a metatable? */
+			luaL_getmetatable(L, tname);  /* get correct metatable */
+			if (!lua_rawequal(L, -1, -2))  /* not the same? */
+				p = NULL;  /* value is a userdata with wrong metatable */
+			lua_pop(L, 2);  /* remove both metatables */
+			return p;
+		}
+	}
+	return NULL;  /* value is not a userdata with a metatable */
 }
 
-int clua_isgofunction(lua_State *L, int n) {
-  return testudata(L, n, MT_GOFUNCTION) != NULL;
+int clua_isgofunction(lua_State *L, int n)
+{
+	return testudata(L, n, MT_GOFUNCTION) != NULL;
 }
 
-int clua_isgostruct(lua_State *L, int n) {
-  return testudata(L, n, MT_GOINTERFACE) != NULL;
+int clua_isgostruct(lua_State *L, int n)
+{
+	return testudata(L, n, MT_GOINTERFACE) != NULL;
 }

@@ -1,4 +1,5 @@
 package lua
+
 /*
 #include <lua.h>
  #include <lauxlib.h>
@@ -6,6 +7,7 @@ package lua
 
 */
 import "C"
+
 const LUA_VERSION = C.LUA_VERSION
 const LUA_RELEASE = C.LUA_RELEASE
 const LUA_VERSION_NUM = C.LUA_VERSION_NUM

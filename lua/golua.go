@@ -10,29 +10,29 @@ package lua
 import "C"
 
 import (
-	"unsafe"
 	"reflect"
+	"unsafe"
 )
 
-type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer;
+type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer
 
 // this is the type of go function that can be registered as lua functions
-type LuaGoFunction func(L *State) int;
+type LuaGoFunction func(L *State) int
 
 //wrapper to keep cgo from complaining about incomplete ptr type
 //export State
 type State struct {
-	s *C.lua_State;
-	registry []interface{};
+	s        *C.lua_State
+	registry []interface{}
 	//freelist for funcs indices, to allow for freeing
-	freeIndices []uint;
+	freeIndices []uint
 }
 
 //export golua_callgofunction
 func golua_callgofunction(L interface{}, fid uint) int {
-	L1 := L.(*State);
-	f := L1.registry[fid].(LuaGoFunction);
-	return f(L1);
+	L1 := L.(*State)
+	f := L1.registry[fid].(LuaGoFunction)
+	return f(L1)
 }
 
 //export golua_interface_newindex_callback
@@ -57,33 +57,41 @@ func golua_interface_newindex_callback(Li interface{}, iid uint, field_name_cstr
 			fval.SetBool(int(C.lua_toboolean(L.s, 3)) != 0)
 			return 1
 		} else {
-			C.lua_pushstring(L.s, C.CString("Wrong assignment to field " + field_name))
+			C.lua_pushstring(L.s, C.CString("Wrong assignment to field "+field_name))
 			return -1
 		}
 
-	case reflect.Int: fallthrough
-	case reflect.Int8: fallthrough
-	case reflect.Int16: fallthrough
-	case reflect.Int32: fallthrough
+	case reflect.Int:
+		fallthrough
+	case reflect.Int8:
+		fallthrough
+	case reflect.Int16:
+		fallthrough
+	case reflect.Int32:
+		fallthrough
 	case reflect.Int64:
 		if luatype == LUA_TNUMBER {
 			fval.SetInt(int64(C.lua_tointeger(L.s, 3)))
 			return 1
 		} else {
-			C.lua_pushstring(L.s, C.CString("Wrong assignment to field " + field_name))
+			C.lua_pushstring(L.s, C.CString("Wrong assignment to field "+field_name))
 			return -1
 		}
 
-	case reflect.Uint: fallthrough
-	case reflect.Uint8: fallthrough
-	case reflect.Uint16: fallthrough
-	case reflect.Uint32: fallthrough
+	case reflect.Uint:
+		fallthrough
+	case reflect.Uint8:
+		fallthrough
+	case reflect.Uint16:
+		fallthrough
+	case reflect.Uint32:
+		fallthrough
 	case reflect.Uint64:
 		if luatype == LUA_TNUMBER {
 			fval.SetUint(uint64(C.lua_tointeger(L.s, 3)))
 			return 1
 		} else {
-			C.lua_pushstring(L.s, C.CString("Wrong assignment to field " + field_name))
+			C.lua_pushstring(L.s, C.CString("Wrong assignment to field "+field_name))
 			return -1
 		}
 
@@ -92,23 +100,24 @@ func golua_interface_newindex_callback(Li interface{}, iid uint, field_name_cstr
 			fval.SetString(C.GoString(C.lua_tolstring(L.s, 3, nil)))
 			return 1
 		} else {
-			C.lua_pushstring(L.s, C.CString("Wrong assignment to field " + field_name))
+			C.lua_pushstring(L.s, C.CString("Wrong assignment to field "+field_name))
 			return -1
 		}
 
-    case reflect.Float32: fallthrough
-    case reflect.Float64:
-    	if luatype == LUA_TNUMBER {
-    		fval.SetFloat(float64(C.lua_tonumber(L.s, 3)))
+	case reflect.Float32:
+		fallthrough
+	case reflect.Float64:
+		if luatype == LUA_TNUMBER {
+			fval.SetFloat(float64(C.lua_tonumber(L.s, 3)))
 			return 1
-    	} else {
-    		C.lua_pushstring(L.s, C.CString("Wrong assignment to field " + field_name))
-    		return -1
-    	}
+		} else {
+			C.lua_pushstring(L.s, C.CString("Wrong assignment to field "+field_name))
+			return -1
+		}
 	}
 
-	C.lua_pushstring(L.s, C.CString("Unsupported type of field " + field_name + ": " + fval.Type().String()))
-	return -1;
+	C.lua_pushstring(L.s, C.CString("Unsupported type of field "+field_name+": "+fval.Type().String()))
+	return -1
 }
 
 //export golua_interface_index_callback
@@ -128,18 +137,26 @@ func golua_interface_index_callback(Li interface{}, iid uint, field_name *C.char
 		L.PushBoolean(fval.Bool())
 		return 1
 
-	case reflect.Int: fallthrough
-	case reflect.Int8: fallthrough
-	case reflect.Int16: fallthrough
-	case reflect.Int32: fallthrough
+	case reflect.Int:
+		fallthrough
+	case reflect.Int8:
+		fallthrough
+	case reflect.Int16:
+		fallthrough
+	case reflect.Int32:
+		fallthrough
 	case reflect.Int64:
 		L.PushInteger(fval.Int())
 		return 1
 
-	case reflect.Uint: fallthrough
-	case reflect.Uint8: fallthrough
-	case reflect.Uint16: fallthrough
-	case reflect.Uint32: fallthrough
+	case reflect.Uint:
+		fallthrough
+	case reflect.Uint8:
+		fallthrough
+	case reflect.Uint16:
+		fallthrough
+	case reflect.Uint32:
+		fallthrough
 	case reflect.Uint64:
 		L.PushInteger(int64(fval.Uint()))
 		return 1
@@ -148,41 +165,42 @@ func golua_interface_index_callback(Li interface{}, iid uint, field_name *C.char
 		L.PushString(fval.String())
 		return 1
 
-    case reflect.Float32: fallthrough
-    case reflect.Float64:
+	case reflect.Float32:
+		fallthrough
+	case reflect.Float64:
 		L.PushNumber(fval.Float())
 		return 1
 	}
 
-	C.lua_pushstring(L.s, C.CString("Unsupported type of field: " + fval.Type().String()))
-	return -1;
+	C.lua_pushstring(L.s, C.CString("Unsupported type of field: "+fval.Type().String()))
+	return -1
 }
 
 //export golua_gchook
 func golua_gchook(L interface{}, id uint) int {
-	L1 := L.(*State);
-	L1.unregister(id);
-	return 0;
+	L1 := L.(*State)
+	L1.unregister(id)
+	return 0
 }
 
 //export golua_callpanicfunction
 func golua_callpanicfunction(L interface{}, id uint) int {
-	L1 := L.(*State);
-	f := L1.registry[id].(LuaGoFunction);
-	return f(L1);
+	L1 := L.(*State)
+	f := L1.registry[id].(LuaGoFunction)
+	return f(L1)
 }
 
 //export golua_idtointerface
 func golua_idtointerface(id uint) interface{} {
-	return id;
+	return id
 }
 
 //export golua_cfunctiontointerface
 func golua_cfunctiontointerface(f *uintptr) interface{} {
-	return f;
+	return f
 }
 
 //export golua_callallocf
 func golua_callallocf(fp uintptr, ptr uintptr, osize uint, nsize uint) uintptr {
-	return uintptr((*((*Alloc)(unsafe.Pointer(fp))))(unsafe.Pointer(ptr),osize,nsize));
+	return uintptr((*((*Alloc)(unsafe.Pointer(fp))))(unsafe.Pointer(ptr), osize, nsize))
 }
