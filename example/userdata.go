@@ -36,12 +36,36 @@ func goDefinedFunctions(L *lua.State) {
 	L.CheckStack(1)
 	L.GetGlobal("example_function")
 	if !L.IsGoFunction(-1) {
-		panic("Not go function")
+		panic("Not a go function")
 	}
 	L.Pop(1)
 
 	/* We call example_function from inside Lua VM */
-	L.DoString("example_function()")
+	L.MustDoString("example_function()")
+}
+
+type TestObject struct {
+	AField int
+}
+
+func goDefinedObjects(L *lua.State) {
+	t := &TestObject{42};
+
+	L.PushGoStruct(t)
+	L.SetGlobal("t");
+
+	/* This code demonstrates checking that a value on the stack is a go object */
+	L.CheckStack(1)
+	L.GetGlobal("t")
+	if !L.IsGoStruct(-1) {
+		panic("Not a go struct")
+	}
+	L.Pop(1)
+
+	/* This code demonstrates access and assignment to a field of a go object */
+	L.MustDoString("print('AField of t is: ' .. t.AField .. ' before assignment');")
+	L.MustDoString("t.AField = 10;");
+	L.MustDoString("print('AField of t is: ' .. t.AField .. ' after assignment');");
 }
 
 func main() {
@@ -58,4 +82,6 @@ func main() {
 	This function demonstrates exposing a function implemented in go to interpreted Lua code
 	*/
 	goDefinedFunctions(L);
+
+	goDefinedObjects(L);
 }

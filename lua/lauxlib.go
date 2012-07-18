@@ -13,6 +13,14 @@ import "unsafe"
 //luaL_addstring
 //luaL_addvalue
 
+type LuaError struct {
+	message string
+}
+
+func (err *LuaError) Error() string {
+	return err.message
+}
+
 func ArgCheck(L *State, cond bool, narg int, extramsg string) {
 	if cond {
 		Cextramsg	:= C.CString(extramsg)
@@ -77,12 +85,21 @@ func (L *State) DoFile(filename string) bool {
 	return false;
 }
 
-//true if no errors, false otherwise
-func (L *State) DoString(str string) bool {
+//nil if no errors, an error otherwise
+func (L *State) DoString(str string) error {
 	if L.LoadString(str) == 0 {
-		return L.PCall(0,LUA_MULTRET,0) == 0;
+		if L.PCall(0,LUA_MULTRET,0) == 0 {
+			return nil
+		}
 	}
-	return false;
+	return &LuaError{L.ToString(-1)}
+}
+
+// evaluates argument like DoString, panics if execution failed
+func (L *State) MustDoString(str string) {
+	if err := L.DoString(str); err != nil {
+		panic(err)
+	}
 }
 
 //luaL_error becomes FmtError because of lua_error

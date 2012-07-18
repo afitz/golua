@@ -7,7 +7,7 @@ void clua_initstate(lua_State* L);
 
 unsigned int clua_togofunction(lua_State* L, int index);
 void clua_pushgofunction(lua_State* L, unsigned int fid);
-void clua_pushgointerface(lua_State *L, unsigned int fid);
+void clua_pushgostruct(lua_State *L, unsigned int fid);
 void clua_pushlightinteger(lua_State* L, int n);
 uintptr_t clua_tolightinteger(lua_State* L, int index);
 void clua_setgostate(lua_State* L, GoInterface gostate);
@@ -27,4 +27,4 @@ void clua_openos(lua_State* L);
 void clua_setexecutionlimit(lua_State* L, int n);
 
 int clua_isgofunction(lua_State *L, int n);
-int clua_isgointerface(lua_State *L, int n);
+int clua_isgostruct(lua_State *L, int n);

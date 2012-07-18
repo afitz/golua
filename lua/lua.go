@@ -85,9 +85,9 @@ func (L *State) PushGoFunction(f LuaGoFunction) {
 	C.clua_pushgofunction(L.s,C.uint(fid));
 }
 
-func (L *State) PushGoInterface(iface interface{}) {
+func (L *State) PushGoStruct(iface interface{}) {
 	iid := L.register(iface);
-	C.clua_pushgointerface(L.s, C.uint(iid));
+	C.clua_pushgostruct(L.s, C.uint(iid));
 }
 
 /*func (L *State) PushLightInteger(n int) {
@@ -205,6 +205,10 @@ func (L *State) IsGoFunction(index int) bool {
 	return C.clua_isgofunction(L.s, C.int(index)) != 0
 }
 
+func (L *State) IsGoStruct(index int) bool {
+	return C.clua_isgostruct(L.s, C.int(index)) != 0
+}
+
 func (L *State) IsFunction(index int) bool {
 	return int(C.lua_type(L.s, C.int(index))) == LUA_TFUNCTION
 }
@@ -297,7 +301,7 @@ func (L *State) PushString(str string) {
 	C.lua_pushstring(L.s,Cstr)
 }
 
-func (L *State) PushInteger(n int) {
+func (L *State) PushInteger(n int64) {
 	C.lua_pushinteger(L.s,C.lua_Integer(n));
 }
 

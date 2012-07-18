@@ -68,7 +68,7 @@ unsigned int clua_togofunction(lua_State* L, int index)
 	return *(clua_checkgosomething(L, index, MT_GOFUNCTION));
 }
 
-unsigned int clua_togointerface(lua_State *L, int index)
+unsigned int clua_togostruct(lua_State *L, int index)
 {
 	return *(clua_checkgosomething(L, index, MT_GOINTERFACE));
 }
@@ -81,7 +81,7 @@ void clua_pushgofunction(lua_State* L, unsigned int fid)
 	lua_setmetatable(L, -2);
 }
 
-void clua_pushgointerface(lua_State* L, unsigned int iid)
+void clua_pushgostruct(lua_State* L, unsigned int iid)
 {
 	unsigned int* iidptr = (unsigned int *)lua_newuserdata(L, sizeof(unsigned int));
 	*iidptr = iid;
@@ -98,9 +98,68 @@ void clua_setgostate(lua_State* L, GoInterface gi)
 	gip->t = gi.t;
 	//set into registry table
 	lua_settable(L,LUA_REGISTRYINDEX);
-
 }
 
+/* called when lua code attempts to access a field of a published go object */
+int interface_index_callback(lua_State *L)
+{
+  unsigned int *iid = clua_checkgosomething(L, 1, MT_GOINTERFACE);
+  if (iid == NULL) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  char *field_name = (char *)lua_tostring(L, 2);
+  if (field_name == NULL) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  GoInterface* gi = clua_getgostate(L);
+
+  int r = golua_interface_index_callback(*gi, *iid, field_name);
+
+  lua_remove(L, 2);
+  lua_remove(L, 1);
+
+  if (r < 0) {
+    lua_error(L);
+    return 0;
+  } else {
+    return r;
+  }
+}
+
+/* called when lua code attempts to set a field of a published go object */
+int interface_newindex_callback(lua_State *L)
+{
+  unsigned int *iid = clua_checkgosomething(L, 1, MT_GOINTERFACE);
+  if (iid == NULL) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  char *field_name = (char *)lua_tostring(L, 2);
+  if (field_name == NULL) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  GoInterface* gi = clua_getgostate(L);
+
+  int r = golua_interface_newindex_callback(*gi, *iid, field_name);
+
+  lua_remove(L, 3);
+  lua_remove(L, 2);
+  lua_remove(L, 1);
+
+  if (r < 0) {
+    lua_error(L);
+    return 0;
+  } else {
+    return r;
+  }
+}
 
 void clua_initstate(lua_State* L)
 {
@@ -123,6 +182,16 @@ void clua_initstate(lua_State* L)
 	// gointerface_metatable[__gc] = &gchook_wrapper
 	lua_pushliteral(L, "__gc");
 	lua_pushcfunction(L, &gchook_wrapper);
+	lua_settable(L, -3);
+
+	// gointerface_metatable[__index] = &interface_index_callback
+	lua_pushliteral(L, "__index");
+	lua_pushcfunction(L, &interface_index_callback);
+	lua_settable(L, -3);
+
+	// gointerface_metatable[__newindex] = &interface_newindex_callback
+	lua_pushliteral(L, "__newindex");
+	lua_pushcfunction(L, &interface_newindex_callback);
 	lua_settable(L, -3);
 
 	lua_pop(L, 1);
@@ -263,6 +332,6 @@ int clua_isgofunction(lua_State *L, int n) {
   return testudata(L, n, MT_GOFUNCTION) != NULL;
 }
 
-int clua_isgointerface(lua_State *L, int n) {
+int clua_isgostruct(lua_State *L, int n) {
   return testudata(L, n, MT_GOINTERFACE) != NULL;
 }
