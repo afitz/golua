@@ -1,6 +1,7 @@
-- documentation
-- lua.go:Dump
-- lua.go:Load
+- ToGoFunction / ToGoStruct error checking (what happens to the other To* and Check* functions when called on the wrong type?)
+- testing (DoFile, DoString on error)
+- lua.go: Dump implementing lua_dump
+- lua.go: Load implementing lua_load
 - AtPanic slightly broken when nil is passed, if we think passing nil has value to extract the current atpanic function we should also make sure it doesn't break everything
 - threads implementation is probably fucked completely should look into it
 - lauxlib.go:CheckOption is not implemented

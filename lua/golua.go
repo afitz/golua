@@ -14,12 +14,13 @@ import (
 	"unsafe"
 )
 
+// Type of allocation functions to use with NewStateAlloc
 type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer
 
-// this is the type of go function that can be registered as lua functions
+// This is the type of go function that can be registered as lua functions
 type LuaGoFunction func(L *State) int
 
-//wrapper to keep cgo from complaining about incomplete ptr type
+// Wrapper to keep cgo from complaining about incomplete ptr type
 //export State
 type State struct {
 	s *C.lua_State
