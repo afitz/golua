@@ -116,9 +116,6 @@ int interface_index_callback(lua_State *L)
 
 	int r = golua_interface_index_callback(*gi, *iid, field_name);
 
-	lua_remove(L, 2);
-	lua_remove(L, 1);
-
 	if (r < 0)
 	{
 		lua_error(L);
@@ -150,10 +147,6 @@ int interface_newindex_callback(lua_State *L)
 	GoInterface* gi = clua_getgostate(L);
 
 	int r = golua_interface_newindex_callback(*gi, *iid, field_name);
-
-	lua_remove(L, 3);
-	lua_remove(L, 2);
-	lua_remove(L, 1);
 
 	if (r < 0)
 	{

@@ -1,4 +1,3 @@
-- ToGoFunction / ToGoStruct error checking (what happens to the other To* and Check* functions when called on the wrong type?)
 - testing (DoFile, DoString on error)
 - lua.go: Dump implementing lua_dump
 - lua.go: Load implementing lua_load

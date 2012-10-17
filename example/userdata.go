@@ -49,10 +49,10 @@ type TestObject struct {
 }
 
 func goDefinedObjects(L *lua.State) {
-	t := &TestObject{42};
+	t := &TestObject{42}
 
 	L.PushGoStruct(t)
-	L.SetGlobal("t");
+	L.SetGlobal("t")
 
 	/* This code demonstrates checking that a value on the stack is a go object */
 	L.CheckStack(1)
@@ -69,8 +69,7 @@ func goDefinedObjects(L *lua.State) {
 }
 
 func main() {
-	var L *lua.State;
-	L = lua.NewState();
+	L := lua.NewState()
 	L.OpenLibs();
 
 	/*

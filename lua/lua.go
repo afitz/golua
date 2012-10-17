@@ -432,12 +432,14 @@ func (L *State) ToBoolean(index int) bool {
 
 // Returns the value at index as a Go function (it must be something pushed with PushGoFunction)
 func (L *State) ToGoFunction(index int) (f LuaGoFunction) {
+	if !L.IsGoFunction(index) { return nil }
 	fid := C.clua_togofunction(L.s, C.int(index))
 	return L.registry[fid].(LuaGoFunction)
 }
 
 // Returns the value at index as a Go Struct (it must be something pushed with PushGoStruct)
 func (L *State) ToGoStruct(index int) (f interface{}) {
+	if !L.IsGoStruct(index) { return nil }
 	fid := C.clua_togostruct(L.s, C.int(index))
 	return L.registry[fid]
 }
