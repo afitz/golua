@@ -31,6 +31,7 @@ type State struct {
 
 //export golua_callgofunction
 func golua_callgofunction(L interface{}, fid uint) int {
+	if fid < 0 { panic(&LuaError{"Requested execution of an unknown function"}) }	
 	L1 := L.(*State)
 	f := L1.registry[fid].(LuaGoFunction)
 	return f(L1)

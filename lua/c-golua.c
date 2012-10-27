@@ -10,20 +10,45 @@
 static const char GoStateRegistryKey = 'k'; //golua registry key
 static const char PanicFIDRegistryKey = 'k';
 
+/* taken from lua5.2 source */
+void *testudata(lua_State *L, int ud, const char *tname)
+{
+	void *p = lua_touserdata(L, ud);
+	if (p != NULL)
+	{  /* value is a userdata? */
+		if (lua_getmetatable(L, ud))
+		{  /* does it have a metatable? */
+			luaL_getmetatable(L, tname);  /* get correct metatable */
+			if (!lua_rawequal(L, -1, -2))  /* not the same? */
+				p = NULL;  /* value is a userdata with wrong metatable */
+			lua_pop(L, 2);  /* remove both metatables */
+			return p;
+		}
+	}
+	return NULL;  /* value is not a userdata with a metatable */
+}
+
+int clua_isgofunction(lua_State *L, int n)
+{
+	return testudata(L, n, MT_GOFUNCTION) != NULL;
+}
+
+int clua_isgostruct(lua_State *L, int n)
+{
+	return testudata(L, n, MT_GOINTERFACE) != NULL;
+}
+
 unsigned int* clua_checkgosomething(lua_State* L, int index, const char *desired_metatable)
 {
 	if (desired_metatable != NULL)
 	{
-		unsigned int* fid = (unsigned int*)luaL_checkudata(L,index, desired_metatable);
-		luaL_argcheck(L, fid != NULL, index, "Metatable not what expected");
-		return fid;
+		return testudata(L, index, desired_metatable);
 	}
 	else
 	{
-		unsigned int *sid = (unsigned int *)luaL_checkudata(L, index, MT_GOFUNCTION);
-		if (sid == NULL) sid = (unsigned int *)luaL_checkudata(L, index, MT_GOINTERFACE);
-		luaL_argcheck(L, sid != NULL, index, "Metatable not what expected");
-		return sid;
+		unsigned int *sid = testudata(L, index, MT_GOFUNCTION);
+		if (sid != NULL) return sid;
+		return testudata(L, index, MT_GOINTERFACE);
 	}
 }
 
@@ -45,27 +70,30 @@ int callback_function(lua_State* L)
 	GoInterface* gi = clua_getgostate(L);
 	//remove the go function from the stack (to present same behavior as lua_CFunctions)
 	lua_remove(L,1);
-	return golua_callgofunction(*gi,*fid);
+	return golua_callgofunction(*gi,fid!=NULL ? *fid : -1);
 }
 
 //wrapper for gchook
 int gchook_wrapper(lua_State* L)
 {
+	//printf("Garbage collection wrapper\n");
 	unsigned int* fid = clua_checkgosomething(L, -1, NULL);
 	GoInterface* gi = clua_getgostate(L);
-	if(fid != NULL)
+	if (fid != NULL)
 		return golua_gchook(*gi,*fid);
 	return 0;
 }
 
 unsigned int clua_togofunction(lua_State* L, int index)
 {
-	return *(clua_checkgosomething(L, index, MT_GOFUNCTION));
+	int *r = clua_checkgosomething(L, index, MT_GOFUNCTION);
+	return (r != NULL) ? *r : -1;
 }
 
 unsigned int clua_togostruct(lua_State *L, int index)
 {
-	return *(clua_checkgosomething(L, index, MT_GOINTERFACE));
+	int *r = clua_checkgosomething(L, index, MT_GOINTERFACE);
+	return (r != NULL) ? *r : -1;
 }
 
 void clua_pushgofunction(lua_State* L, unsigned int fid)
@@ -320,30 +348,4 @@ void clua_setexecutionlimit(lua_State* L, int n)
 	lua_sethook(L, &clua_hook_function, LUA_MASKCOUNT, n);
 }
 
-/* taken from lua5.2 source */
-void *testudata(lua_State *L, int ud, const char *tname)
-{
-	void *p = lua_touserdata(L, ud);
-	if (p != NULL)
-	{  /* value is a userdata? */
-		if (lua_getmetatable(L, ud))
-		{  /* does it have a metatable? */
-			luaL_getmetatable(L, tname);  /* get correct metatable */
-			if (!lua_rawequal(L, -1, -2))  /* not the same? */
-				p = NULL;  /* value is a userdata with wrong metatable */
-			lua_pop(L, 2);  /* remove both metatables */
-			return p;
-		}
-	}
-	return NULL;  /* value is not a userdata with a metatable */
-}
 
-int clua_isgofunction(lua_State *L, int n)
-{
-	return testudata(L, n, MT_GOFUNCTION) != NULL;
-}
-
-int clua_isgostruct(lua_State *L, int n)
-{
-	return testudata(L, n, MT_GOINTERFACE) != NULL;
-}

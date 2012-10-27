@@ -16,6 +16,7 @@ package lua
 */
 import "C"
 import "unsafe"
+import "fmt"
 
 func newState(L *C.lua_State) *State {
 	var newstatei interface{}
@@ -46,7 +47,9 @@ func (L *State) getFreeIndex() (index uint, ok bool) {
 	//if there exist entries in the freelist
 	if freelen > 0 {
 		i := L.freeIndices[freelen-1]      //get index
-		L.freeIndices = L.freeIndices[0:i] //'pop' index from list
+		//fmt.Printf("Free indices before: %v\n", L.freeIndices)
+		L.freeIndices = L.freeIndices[0:freelen-1] //'pop' index from list
+		//fmt.Printf("Free indices after: %v\n", L.freeIndices)
 		return i, true
 	}
 	return 0, false
@@ -54,7 +57,9 @@ func (L *State) getFreeIndex() (index uint, ok bool) {
 
 //returns the registered function id
 func (L *State) register(f interface{}) uint {
+	//fmt.Printf("Registering %v\n")
 	index, ok := L.getFreeIndex()
+	//fmt.Printf("\tfreeindex: index = %v, ok = %v\n", index, ok)
 	//if not ok, then we need to add new index by extending the slice
 	if !ok {
 		index = uint(len(L.registry))
@@ -67,11 +72,13 @@ func (L *State) register(f interface{}) uint {
 		//reslice
 		L.registry = L.registry[0 : index+1]
 	}
+	//fmt.Printf("\tregistering %d %v\n", index, f)
 	L.registry[index] = f
 	return index
 }
 
 func (L *State) unregister(fid uint) {
+	//fmt.Printf("Unregistering %d (len: %d, value: %v)\n", fid, len(L.registry), L.registry[fid])
 	if (fid < uint(len(L.registry))) && (L.registry[fid] != nil) {
 		L.registry[fid] = nil
 		L.addFreeIndex(fid)
@@ -430,6 +437,7 @@ func (L *State) ToBoolean(index int) bool {
 func (L *State) ToGoFunction(index int) (f LuaGoFunction) {
 	if !L.IsGoFunction(index) { return nil }
 	fid := C.clua_togofunction(L.s, C.int(index))
+	if fid < 0 { return nil }
 	return L.registry[fid].(LuaGoFunction)
 }
 
@@ -437,6 +445,7 @@ func (L *State) ToGoFunction(index int) (f LuaGoFunction) {
 func (L *State) ToGoStruct(index int) (f interface{}) {
 	if !L.IsGoStruct(index) { return nil }
 	fid := C.clua_togostruct(L.s, C.int(index))
+	if fid < 0 { return nil }
 	return L.registry[fid]
 }
 
