@@ -16,7 +16,7 @@ package lua
 */
 import "C"
 import "unsafe"
-import "fmt"
+//import "fmt"
 
 func newState(L *C.lua_State) *State {
 	var newstatei interface{}
