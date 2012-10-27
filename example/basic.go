@@ -9,8 +9,8 @@ func test(L *lua.State) int {
 }
 
 func test2(L *lua.State) int {
-	arg := lua.CheckInteger(L,-1);
-	argfrombottom := lua.CheckInteger(L,1);
+	arg := L.CheckInteger(-1);
+	argfrombottom := L.CheckInteger(1);
 	fmt.Print("test2 arg: ");
 	fmt.Println(arg);
 	fmt.Print("from bottom: ");

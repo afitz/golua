@@ -38,6 +38,7 @@ func TestGoStruct(t *testing.T) {
 	L.Pop(1)
 }
 
+
 // TODO:
 // - function test
 // - struct field getting and setting test
