@@ -80,24 +80,38 @@ func (L *State) CheckUdata(narg int, tname string) unsafe.Pointer {
 	return unsafe.Pointer(C.luaL_checkudata(L.s, C.int(narg), Ctname))
 }
 
+func (L *State) pcallAndCatchErrors() (err error) {
+	defer func() {
+		if err2 := recover(); err2 != nil {
+			if _, ok := err2.(error); ok {
+				err = err2.(error)
+			}
+			return;
+		}
+	}()
+	err = nil
+
+	if L.PCall(0, LUA_MULTRET, 0) != 0 {
+		err = &LuaError{L.ToString(-1)}
+	}
+
+	return
+}
+
 // Executes file, returns nil for no errors or the lua error string on failure
 func (L *State) DoFile(filename string) error {
-	if L.LoadFile(filename) == 0 {
-		if L.PCall(0, LUA_MULTRET, 0) == 0 {
-			return nil
-		}
+	if L.LoadFile(filename) != 0 {
+		return &LuaError{L.ToString(-1)}
 	}
-	return &LuaError{L.ToString(-1)}
+	return L.pcallAndCatchErrors()
 }
 
 // Executes the string, returns nil for no errors or the lua error string on failure
 func (L *State) DoString(str string) error {
-	if L.LoadString(str) == 0 {
-		if L.PCall(0, LUA_MULTRET, 0) == 0 {
-			return nil
-		}
+	if L.LoadString(str) != 0 {
+		return &LuaError{L.ToString(-1)}
 	}
-	return &LuaError{L.ToString(-1)}
+	return L.pcallAndCatchErrors()
 }
 
 // Like DoString but panics on error
@@ -184,12 +198,6 @@ func (L *State) OptString(narg int, d string) string {
 	Cd := C.CString(d)
 	defer C.free(unsafe.Pointer(Cd))
 	return C.GoString(C.luaL_optlstring(L.s, C.int(narg), Cd, &length))
-}
-
-// Raises error with given message, equivalent to PushString followed by Error
-func (L *State) ErrorWithMessage(errorMessage string) int {
-	L.PushString(errorMessage)
-	return L.Error()
 }
 
 // luaL_ref

@@ -15,7 +15,6 @@ package lua
 
 */
 import "C"
-
 import "unsafe"
 
 func newState(L *C.lua_State) *State {
@@ -160,9 +159,6 @@ func (L *State) CreateTable(narr int, nrec int) {
 func (L *State) Equal(index1, index2 int) bool {
 	return C.lua_equal(L.s, C.int(index1), C.int(index2)) == 1
 }
-
-// lua_error
-func (L *State) Error() int { return int(C.lua_error(L.s)) }
 
 // lua_gc
 func (L *State) GC(what, data int) int { return int(C.lua_gc(L.s, C.int(what), C.int(data))) }

@@ -1,4 +1,3 @@
-- testing (DoFile, DoString on error)
 - lua.go: Dump implementing lua_dump
 - lua.go: Load implementing lua_load
 - AtPanic slightly broken when nil is passed, if we think passing nil has value to extract the current atpanic function we should also make sure it doesn't break everything
