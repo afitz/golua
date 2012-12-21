@@ -41,6 +41,7 @@ func main() {
 	L.Call(0,0)
 	L.Call(0,0)
 
+	// this will fail as we didn't register test2 function
 	err := L.DoString("test2(42)")
 
 	fmt.Printf("Ciao %v\n", err)

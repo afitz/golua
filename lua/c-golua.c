@@ -66,11 +66,16 @@ GoInterface* clua_getgostate(lua_State* L)
 //wrapper for callgofunction
 int callback_function(lua_State* L)
 {
+	int r;
 	unsigned int *fid = clua_checkgosomething(L, 1, MT_GOFUNCTION);
 	GoInterface* gi = clua_getgostate(L);
 	//remove the go function from the stack (to present same behavior as lua_CFunctions)
 	lua_remove(L,1);
-	return golua_callgofunction(*gi,fid!=NULL ? *fid : -1);
+	r = golua_callgofunction(*gi, fid!=NULL ? *fid : -1);
+	if (golua_error_requested(*gi)) {
+		lua_error(L);
+	}
+	return r;
 }
 
 //wrapper for gchook

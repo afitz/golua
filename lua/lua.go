@@ -20,7 +20,7 @@ import "unsafe"
 
 func newState(L *C.lua_State) *State {
 	var newstatei interface{}
-	newstate := &State{L, make([]interface{}, 0, 8), make([]uint, 0, 8)}
+	newstate := &State{L, make([]interface{}, 0, 8), make([]uint, 0, 8), false}
 	newstatei = newstate
 	ns1 := unsafe.Pointer(&newstatei)
 	ns2 := (*C.GoInterface)(ns1)
@@ -290,7 +290,7 @@ func (L *State) NewThread() *State {
 	//TODO: should have same lists as parent
 	//		but may complicate gc
 	s := C.lua_newthread(L.s)
-	return &State{s, nil, nil}
+	return &State{s, nil, nil, false}
 }
 
 // lua_next
@@ -563,3 +563,11 @@ func (L *State) OpenOS() {
 func (L *State) SetExecutionLimit(instrNumber int) {
 	C.clua_setexecutionlimit(L.s, C.int(instrNumber))
 }
+
+// Calls lua_error.
+// The call to lua error will be delayed until control returns to Lua VM:
+// follow a call to this function with a return and make sure you leave a string describing the error on the stack
+func (L *State) Error() {
+	L.errorRequested = true
+}
+

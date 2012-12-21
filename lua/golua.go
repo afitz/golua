@@ -23,18 +23,32 @@ type LuaGoFunction func(L *State) int
 // Wrapper to keep cgo from complaining about incomplete ptr type
 //export State
 type State struct {
+	// Wrapped lua_State object
 	s *C.lua_State
+
+	// Registry of go object that have been pushed to Lua VM
 	registry []interface{}
-	//freelist for funcs indices, to allow for freeing
+
+	// Freelist for funcs indices, to allow for freeing
 	freeIndices []uint
+
+	// Go functions can set this to true to have their C wrapper call lua_error (they can't call it directly)
+	errorRequested bool
 }
 
 //export golua_callgofunction
 func golua_callgofunction(L interface{}, fid uint) int {
-	if fid < 0 { panic(&LuaError{"Requested execution of an unknown function"}) }	
+	if fid < 0 { panic(&LuaError{"Requested execution of an unknown function"}) }
 	L1 := L.(*State)
+	L1.errorRequested = false
 	f := L1.registry[fid].(LuaGoFunction)
 	return f(L1)
+}
+
+//export golua_error_requested
+func golua_error_requested(L interface{}) bool {
+	L1 := L.(*State)
+	return L1.errorRequested
 }
 
 //export golua_interface_newindex_callback
