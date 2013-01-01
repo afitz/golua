@@ -5,7 +5,7 @@ Simplest way to install:
 
 	# go get -u github.com/aarzilli/golua/lua
 
-Will work as long as `pkg-config` knows about lua.
+Will work as long as your compiler can find a shared object called lua5.1 on linux, or lua anywhere else (use the build tag llua if you have linux but your lua isn't called "lua5.1").
 
 You can then try to run the examples:
 
@@ -65,6 +65,10 @@ func main() {
 	L.DoString("print(adder(2, 2))")
 }
 ```
+SEE ALSO
+---------------------
+
+[Luar](https://github.com/stevedonovan/luar/) is a reflection layer on top of golua API providing a simplified way to publish go functions to a Lua VM.
 
 Licensing
 -------------
@@ -72,6 +76,3 @@ GoLua is released under the MIT license.
 Please see the LICENSE file for more information.
 
 Lua is Copyright (c) Lua.org, PUC-Rio.  All rights reserved.
-
-
-
