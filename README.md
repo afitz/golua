@@ -93,6 +93,16 @@ ON THREADS AND COROUTINES
 
 'lua.State' is not thread safe, but the library itself is. Lua's coroutines exist but (to my knowledge) have never been tested and are likely to encounter the same problems that errors have, use at your own peril.
 
+CONTRIBUTORS
+---------------------
+
+Adam Fitzgerald (original author)
+Alessandro Arzilli
+Steve Donovan
+Harley Laue
+James Nurmi
+Ruitao
+Xushiwei
 
 SEE ALSO
 ---------------------
