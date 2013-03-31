@@ -31,24 +31,16 @@ type State struct {
 
 	// Freelist for funcs indices, to allow for freeing
 	freeIndices []uint
-
-	// Go functions can set this to true to have their C wrapper call lua_error (they can't call it directly)
-	errorRequested bool
 }
 
 //export golua_callgofunction
 func golua_callgofunction(L interface{}, fid uint) int {
-	if fid < 0 { panic(&LuaError{"Requested execution of an unknown function"}) }
+	if fid < 0 {
+		panic(&LuaError{"Requested execution of an unknown function"})
+	}
 	L1 := L.(*State)
-	L1.errorRequested = false
 	f := L1.registry[fid].(LuaGoFunction)
 	return f(L1)
-}
-
-//export golua_error_requested
-func golua_error_requested(L interface{}) bool {
-	L1 := L.(*State)
-	return L1.errorRequested
 }
 
 //export golua_interface_newindex_callback
@@ -219,4 +211,10 @@ func golua_cfunctiontointerface(f *uintptr) interface{} {
 //export golua_callallocf
 func golua_callallocf(fp uintptr, ptr uintptr, osize uint, nsize uint) uintptr {
 	return uintptr((*((*Alloc)(unsafe.Pointer(fp))))(unsafe.Pointer(ptr), osize, nsize))
+}
+
+//export go_panic_msghandler
+func go_panic_msghandler(z *C.char) {
+	s := C.GoString(z)
+	panic(&LuaError{s})
 }

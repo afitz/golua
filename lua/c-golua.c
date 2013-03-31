@@ -7,6 +7,8 @@
 #define MT_GOFUNCTION "GoLua.GoFunction"
 #define MT_GOINTERFACE "GoLua.GoInterface"
 
+#define GOLUA_DEFAULT_MSGHANDLER "golua_default_msghandler"
+
 static const char GoStateRegistryKey = 'k'; //golua registry key
 static const char PanicFIDRegistryKey = 'k';
 
@@ -71,11 +73,7 @@ int callback_function(lua_State* L)
 	GoInterface* gi = clua_getgostate(L);
 	//remove the go function from the stack (to present same behavior as lua_CFunctions)
 	lua_remove(L,1);
-	r = golua_callgofunction(*gi, fid!=NULL ? *fid : -1);
-	if (golua_error_requested(*gi)) {
-		lua_error(L);
-	}
-	return r;
+	return golua_callgofunction(*gi, fid!=NULL ? *fid : -1);
 }
 
 //wrapper for gchook
@@ -204,10 +202,28 @@ int interface_newindex_callback(lua_State *L)
 	}
 }
 
+int panic_msghandler(lua_State *L)
+{
+	go_panic_msghandler((char *)lua_tolstring(L, -1, NULL));
+}
+
+void clua_hide_pcall(lua_State *L)
+{
+	lua_getglobal(L, "pcall");
+	lua_setglobal(L, "unsafe_pcall");
+	lua_pushnil(L);
+	lua_setglobal(L, "pcall");
+
+	lua_getglobal(L, "xpcall");
+	lua_setglobal(L, "unsafe_xpcall");
+	lua_pushnil(L);
+	lua_setglobal(L, "xpcall");
+}
+
 void clua_initstate(lua_State* L)
 {
 	/* create the GoLua.GoFunction metatable */
-	luaL_newmetatable(L,MT_GOFUNCTION);
+	luaL_newmetatable(L, MT_GOFUNCTION);
 
 	// gofunction_metatable[__call] = &callback_function
 	lua_pushliteral(L,"__call");
@@ -237,6 +253,7 @@ void clua_initstate(lua_State* L)
 	lua_pushcfunction(L, &interface_newindex_callback);
 	lua_settable(L, -3);
 
+	lua_register(L, GOLUA_DEFAULT_MSGHANDLER, &panic_msghandler);
 	lua_pop(L, 1);
 }
 
@@ -309,6 +326,7 @@ void clua_openbase(lua_State* L)
 	lua_pushcfunction(L,&luaopen_base);
 	lua_pushstring(L,"");
 	lua_call(L, 1, 0);
+	clua_hide_pcall(L);
 }
 
 void clua_openio(lua_State* L)

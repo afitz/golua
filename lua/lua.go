@@ -20,11 +20,10 @@ package lua
 */
 import "C"
 import "unsafe"
-//import "fmt"
 
 func newState(L *C.lua_State) *State {
 	var newstatei interface{}
-	newstate := &State{L, make([]interface{}, 0, 8), make([]uint, 0, 8), false}
+	newstate := &State{L, make([]interface{}, 0, 8), make([]uint, 0, 8)}
 	newstatei = newstate
 	ns1 := unsafe.Pointer(&newstatei)
 	ns2 := (*C.GoInterface)(ns1)
@@ -161,9 +160,39 @@ func (L *State) AtPanic(panicf LuaGoFunction) (oldpanicf LuaGoFunction) {
 	return nil
 }
 
+func (L *State) pcall(nargs, nresults, errfunc int) int {
+	return int(C.lua_pcall(L.s, C.int(nargs), C.int(nresults), C.int(errfunc)))
+}
+
+func (L *State) pcallAndCatchErrors(nargs, nresults, erridx int) (err error) {
+	defer func() {
+		if err2 := recover(); err2 != nil {
+			if _, ok := err2.(error); ok {
+				err = err2.(error)
+			}
+			return;
+		}
+	}()
+	err = nil
+
+	if L.pcall(nargs, nresults, erridx) != 0 {
+		err = &LuaError{L.ToString(-1)}
+	}
+
+	return
+}
+
 // lua_call
-func (L *State) Call(nargs int, nresults int) {
-	C.lua_call(L.s, C.int(nargs), C.int(nresults))
+func (L *State) Call(nargs int, nresults int) error {
+	L.GetGlobal(C.GOLUA_DEFAULT_MSGHANDLER)
+	// We must record where we put the error handler in the stack otherwise it will be impossible to remove after the pcall when nresults == LUA_MULTRET
+	erridx := L.GetTop()-nargs-1
+	L.Insert(erridx)
+	r := L.pcallAndCatchErrors(nargs, nresults, L.GetTop()-nargs-1)
+	if r == nil {
+		L.Remove(erridx)
+	}
+	return r
 }
 
 // lua_checkstack
@@ -294,7 +323,7 @@ func (L *State) NewThread() *State {
 	//TODO: should have same lists as parent
 	//		but may complicate gc
 	s := C.lua_newthread(L.s)
-	return &State{s, nil, nil, false}
+	return &State{s, nil, nil}
 }
 
 // lua_next
@@ -305,11 +334,6 @@ func (L *State) Next(index int) int {
 // lua_objlen
 func (L *State) ObjLen(index int) uint {
 	return uint(C.lua_objlen(L.s, C.int(index)))
-}
-
-// lua_pcall
-func (L *State) PCall(nargs int, nresults int, errfunc int) int {
-	return int(C.lua_pcall(L.s, C.int(nargs), C.int(nresults), C.int(errfunc)))
 }
 
 // lua_pop
@@ -567,11 +591,3 @@ func (L *State) OpenOS() {
 func (L *State) SetExecutionLimit(instrNumber int) {
 	C.clua_setexecutionlimit(L.s, C.int(instrNumber))
 }
-
-// Calls lua_error.
-// The call to lua error will be delayed until control returns to Lua VM:
-// follow a call to this function with a return and make sure you leave a string describing the error on the stack
-func (L *State) Error() {
-	L.errorRequested = true
-}
-

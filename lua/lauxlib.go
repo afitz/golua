@@ -80,30 +80,12 @@ func (L *State) CheckUdata(narg int, tname string) unsafe.Pointer {
 	return unsafe.Pointer(C.luaL_checkudata(L.s, C.int(narg), Ctname))
 }
 
-func (L *State) pcallAndCatchErrors() (err error) {
-	defer func() {
-		if err2 := recover(); err2 != nil {
-			if _, ok := err2.(error); ok {
-				err = err2.(error)
-			}
-			return;
-		}
-	}()
-	err = nil
-
-	if L.PCall(0, LUA_MULTRET, 0) != 0 {
-		err = &LuaError{L.ToString(-1)}
-	}
-
-	return
-}
-
 // Executes file, returns nil for no errors or the lua error string on failure
 func (L *State) DoFile(filename string) error {
 	if L.LoadFile(filename) != 0 {
 		return &LuaError{L.ToString(-1)}
 	}
-	return L.pcallAndCatchErrors()
+	return L.Call(0, LUA_MULTRET);
 }
 
 // Executes the string, returns nil for no errors or the lua error string on failure
@@ -111,7 +93,7 @@ func (L *State) DoString(str string) error {
 	if L.LoadString(str) != 0 {
 		return &LuaError{L.ToString(-1)}
 	}
-	return L.pcallAndCatchErrors()
+	return L.Call(0, LUA_MULTRET)
 }
 
 // Like DoString but panics on error
@@ -180,6 +162,7 @@ func NewState() *State {
 // luaL_openlibs
 func (L *State) OpenLibs() {
 	C.luaL_openlibs(L.s)
+	C.clua_hide_pcall(L.s)
 }
 
 // luaL_optinteger

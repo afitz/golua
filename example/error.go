@@ -18,12 +18,6 @@ func faultyfunc(L *lua.State) int {
 	panic(errors.New("An error"))
 }
 
-func faultyfunc2(L *lua.State) int {
-	L.PushString("Some error")
-	L.Error()
-	return 1
-}
-
 func testRegistered(L *lua.State) {
 	L.Register("faultyfunc", faultyfunc)
 	err := L.DoString("faultyfunc()")
@@ -34,9 +28,8 @@ func testRegistered(L *lua.State) {
 	}
 }
 
-func testRegistered2(L *lua.State) {
-	L.Register("faultyfunc2", faultyfunc2)
-	err := L.DoString("faultyfunc2()")
+func test2(L *lua.State) {
+	err := L.DoString("error(\"Some error\")")
 	fmt.Printf("Error is %v\n", err)
 	if err == nil {
 		fmt.Printf("Error shouldn't have been nil\n")
@@ -51,5 +44,5 @@ func main() {
 
 	testDefault(L)
 	testRegistered(L)
-	testRegistered2(L)
+	test2(L)
 }

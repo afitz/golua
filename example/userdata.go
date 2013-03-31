@@ -70,6 +70,7 @@ func goDefinedObjects(L *lua.State) {
 
 func main() {
 	L := lua.NewState()
+	defer L.Close()
 	L.OpenLibs();
 
 	/*
@@ -80,7 +81,7 @@ func main() {
 	/*
 	This function demonstrates exposing a function implemented in go to interpreted Lua code
 	*/
-	goDefinedFunctions(L);
+	goDefinedFunctions(L)
 
-	goDefinedObjects(L);
+	goDefinedObjects(L)
 }

@@ -2,8 +2,11 @@
 
 typedef struct { void *t; void *v; } GoInterface;
 
+#define GOLUA_DEFAULT_MSGHANDLER "golua_default_msghandler"
+
 /* function to setup metatables, etc */
 void clua_initstate(lua_State* L);
+void clua_hide_pcall(lua_State *L);
 
 unsigned int clua_togofunction(lua_State* L, int index);
 unsigned int clua_togostruct(lua_State *L, int index);
@@ -28,3 +31,4 @@ void clua_setexecutionlimit(lua_State* L, int n);
 
 int clua_isgofunction(lua_State *L, int n);
 int clua_isgostruct(lua_State *L, int n);
+
