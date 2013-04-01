@@ -9,11 +9,16 @@ import "C"
 import "unsafe"
 
 type LuaError struct {
+	code int
 	message string
 }
 
 func (err *LuaError) Error() string {
 	return err.message
+}
+
+func (err *LuaError) Code() int {
+	return err.code
 }
 
 // luaL_argcheck
@@ -82,16 +87,16 @@ func (L *State) CheckUdata(narg int, tname string) unsafe.Pointer {
 
 // Executes file, returns nil for no errors or the lua error string on failure
 func (L *State) DoFile(filename string) error {
-	if L.LoadFile(filename) != 0 {
-		return &LuaError{L.ToString(-1)}
+	if r := L.LoadFile(filename); r != 0 {
+		return &LuaError{r, L.ToString(-1)}
 	}
 	return L.Call(0, LUA_MULTRET);
 }
 
 // Executes the string, returns nil for no errors or the lua error string on failure
 func (L *State) DoString(str string) error {
-	if L.LoadString(str) != 0 {
-		return &LuaError{L.ToString(-1)}
+	if r := L.LoadString(str); r != 0 {
+		return &LuaError{r, L.ToString(-1)}
 	}
 	return L.Call(0, LUA_MULTRET)
 }

@@ -164,35 +164,41 @@ func (L *State) pcall(nargs, nresults, errfunc int) int {
 	return int(C.lua_pcall(L.s, C.int(nargs), C.int(nresults), C.int(errfunc)))
 }
 
-func (L *State) pcallAndCatchErrors(nargs, nresults, erridx int) (err error) {
-	defer func() {
-		if err2 := recover(); err2 != nil {
-			if _, ok := err2.(error); ok {
-				err = err2.(error)
+func (L *State) callEx(nargs, nresults int, catch bool) (err error) {
+	if (catch) {
+		defer func() {
+			if err2 := recover(); err2 != nil {
+				if _, ok := err2.(error); ok {
+					err = err2.(error)
+				}
+				return;
 			}
-			return;
-		}
-	}()
-	err = nil
-
-	if L.pcall(nargs, nresults, erridx) != 0 {
-		err = &LuaError{L.ToString(-1)}
+		}()
 	}
 
-	return
-}
-
-// lua_call
-func (L *State) Call(nargs int, nresults int) error {
 	L.GetGlobal(C.GOLUA_DEFAULT_MSGHANDLER)
 	// We must record where we put the error handler in the stack otherwise it will be impossible to remove after the pcall when nresults == LUA_MULTRET
 	erridx := L.GetTop()-nargs-1
 	L.Insert(erridx)
-	r := L.pcallAndCatchErrors(nargs, nresults, L.GetTop()-nargs-1)
-	if r == nil {
-		L.Remove(erridx)
+	r := L.pcall(nargs, nresults, erridx)
+	L.Remove(erridx)
+	if r != 0 {
+		err = &LuaError{r, L.ToString(-1)}
+		if !catch {
+			panic(err)
+		}
 	}
-	return r
+	return
+}
+
+// lua_call
+func (L *State) Call(nargs, nresults int) (err error) {
+	return L.callEx(nargs, nresults, true)
+}
+
+// Like lua_call but panics on errors
+func (L *State) MustCall(nargs, nresults int) {
+	L.callEx(nargs, nresults, false)
 }
 
 // lua_checkstack
