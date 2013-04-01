@@ -257,10 +257,10 @@ func TestLikeUserdata(t *testing.T) {
 	}
 
 	goDefinedFunctions := func(L *State) {
-		/* example_function is registered inside Lua VM */
+		// example_function is registered inside Lua VM
 		L.Register("test", test)
 
-		/* This code demonstrates checking that a value on the stack is a go function */
+		// This code demonstrates checking that a value on the stack is a go function
 		L.CheckStack(1)
 		L.GetGlobal("test")
 		if !L.IsGoFunction(-1) {
@@ -268,7 +268,7 @@ func TestLikeUserdata(t *testing.T) {
 		}
 		L.Pop(1)
 
-		/* We call example_function from inside Lua VM */
+		// We call example_function from inside Lua VM
 		testCalled = 0
 		if err := L.DoString("test()"); err != nil {
 			t.Fatalf("Error executing test function: %v\n", err)
@@ -288,7 +288,7 @@ func TestLikeUserdata(t *testing.T) {
 		L.PushGoStruct(z)
 		L.SetGlobal("z")
 
-		/* This code demonstrates checking that a value on the stack is a go object */
+		// This code demonstrates checking that a value on the stack is a go object
 		L.CheckStack(1)
 		L.GetGlobal("z")
 		if !L.IsGoStruct(-1) {
@@ -296,7 +296,7 @@ func TestLikeUserdata(t *testing.T) {
 		}
 		L.Pop(1)
 
-		/* This code demonstrates access and assignment to a field of a go object */
+		// This code demonstrates access and assignment to a field of a go object
 		if err := L.DoString("return z.AField"); err != nil {
 			t.Fatal("Couldn't execute code")
 		}
@@ -325,4 +325,25 @@ func TestLikeUserdata(t *testing.T) {
 	userDataProper(L)
 	goDefinedFunctions(L)
 	goDefinedObjects(L)
+}
+
+func TestStackTrace(t *testing.T) {
+	L := NewState()
+	defer L.Close()
+	L.OpenLibs()
+
+	err := L.DoFile("../example/calls.lua")
+	if err == nil {
+		t.Fatal("No error returned from the execution of calls.lua")
+	}
+
+	le := err.(*LuaError)
+
+	if le.Code() != LUA_ERRERR {
+		t.Fatalf("Wrong kind of error encountered running calls.lua: %v (%d %d)\n", le, le.Code(), LUA_ERRERR)
+	}
+
+	if len(le.StackTrace()) != 6 {
+		t.Fatalf("Wrong size of stack trace (%v)\n", le.StackTrace())
+	}
 }

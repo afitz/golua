@@ -21,6 +21,13 @@ package lua
 import "C"
 import "unsafe"
 
+type LuaStackEntry struct {
+	Name string
+	Source string
+	ShortSource string
+	CurrentLine int
+}
+
 func newState(L *C.lua_State) *State {
 	var newstatei interface{}
 	newstate := &State{L, make([]interface{}, 0, 8), make([]uint, 0, 8)}
@@ -183,7 +190,7 @@ func (L *State) callEx(nargs, nresults int, catch bool) (err error) {
 	r := L.pcall(nargs, nresults, erridx)
 	L.Remove(erridx)
 	if r != 0 {
-		err = &LuaError{r, L.ToString(-1)}
+		err = &LuaError{r, L.ToString(-1), L.StackTrace()}
 		if !catch {
 			panic(err)
 		}
@@ -596,4 +603,29 @@ func (L *State) OpenOS() {
 // Sets the maximum number of operations to execute at instrNumber, after this the execution ends
 func (L *State) SetExecutionLimit(instrNumber int) {
 	C.clua_setexecutionlimit(L.s, C.int(instrNumber))
+}
+
+// Returns the current stack trace
+func (L *State) StackTrace() []LuaStackEntry {
+	r := []LuaStackEntry{}
+	var d C.lua_Debug
+	Sln := C.CString("Sln")
+	defer C.free(unsafe.Pointer(Sln))
+
+	for depth := 0; C.lua_getstack(L.s, C.int(depth), &d) > 0; depth++ {
+		C.lua_getinfo(L.s, Sln, &d)
+		ssb := make([]byte, C.LUA_IDSIZE)
+		for i := 0; i < C.LUA_IDSIZE; i++ {
+			ssb[i] = byte(d.short_src[i])
+			if ssb[i] == 0 {
+				ssb = ssb[:i]
+				break
+			}
+		}
+		ss := string(ssb)
+
+		r = append(r, LuaStackEntry{ C.GoString(d.name), C.GoString(d.source), ss, int(d.currentline) })
+	}
+
+	return r
 }

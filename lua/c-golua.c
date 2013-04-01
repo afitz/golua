@@ -204,7 +204,8 @@ int interface_newindex_callback(lua_State *L)
 
 int panic_msghandler(lua_State *L)
 {
-	go_panic_msghandler((char *)lua_tolstring(L, -1, NULL));
+	GoInterface* gi = clua_getgostate(L);
+	go_panic_msghandler(*gi, (char *)lua_tolstring(L, -1, NULL));
 }
 
 void clua_hide_pcall(lua_State *L)

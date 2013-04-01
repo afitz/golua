@@ -11,6 +11,7 @@ import "unsafe"
 type LuaError struct {
 	code int
 	message string
+	stackTrace []LuaStackEntry
 }
 
 func (err *LuaError) Error() string {
@@ -19,6 +20,10 @@ func (err *LuaError) Error() string {
 
 func (err *LuaError) Code() int {
 	return err.code
+}
+
+func (err *LuaError) StackTrace() []LuaStackEntry {
+	return err.stackTrace
 }
 
 // luaL_argcheck
@@ -88,7 +93,7 @@ func (L *State) CheckUdata(narg int, tname string) unsafe.Pointer {
 // Executes file, returns nil for no errors or the lua error string on failure
 func (L *State) DoFile(filename string) error {
 	if r := L.LoadFile(filename); r != 0 {
-		return &LuaError{r, L.ToString(-1)}
+		return &LuaError{r, L.ToString(-1), L.StackTrace()}
 	}
 	return L.Call(0, LUA_MULTRET);
 }
@@ -96,7 +101,7 @@ func (L *State) DoFile(filename string) error {
 // Executes the string, returns nil for no errors or the lua error string on failure
 func (L *State) DoString(str string) error {
 	if r := L.LoadString(str); r != 0 {
-		return &LuaError{r, L.ToString(-1)}
+		return &LuaError{r, L.ToString(-1), L.StackTrace()}
 	}
 	return L.Call(0, LUA_MULTRET)
 }
