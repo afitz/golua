@@ -5,7 +5,11 @@ Simplest way to install:
 
 	# go get -u github.com/aarzilli/golua/lua
 
-Will work as long as your compiler can find a shared object called lua5.1 on linux, or lua anywhere else (use the build tag llua if you have linux but your lua isn't called "lua5.1").
+Will work as long as your compiler can find a shared object called lua5.1 on linux, or lua anywhere else.
+If your linux system uses "lua" as the shared object name for lua (for example, Fedora Core does this) you can install using:
+
+	# go get -u -tags llua github.com/aarzilli/golua/lua
+
 
 You can then try to run the examples:
 
