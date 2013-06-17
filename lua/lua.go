@@ -21,6 +21,8 @@ package lua
 import "C"
 import "unsafe"
 
+import "fmt"
+
 type LuaStackEntry struct {
 	Name string
 	Source string
@@ -628,4 +630,17 @@ func (L *State) StackTrace() []LuaStackEntry {
 	}
 
 	return r
+}
+
+func (L *State) RaiseError(msg string) {
+	st := L.StackTrace()
+	prefix := ""
+	if len(st) >= 1 {
+		prefix = fmt.Sprintf("%s:%d: ", st[1].ShortSource, st[1].CurrentLine)
+	}
+	panic(&LuaError{ 0, prefix + msg, st })
+}
+
+func (L *State) NewError(msg string) *LuaError {
+	return &LuaError{ 0, msg, L.StackTrace() }
 }
