@@ -4,7 +4,7 @@ import "../lua"
 import "unsafe"
 import "fmt"
 
-var refHolder [][]byte;
+var refHolder = map[unsafe.Pointer][]byte{}
 
 
 //a terrible allocator!
@@ -12,15 +12,21 @@ var refHolder [][]byte;
 //not usable as an actual implementation
 func AllocatorF(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer {
 	if(nsize == 0) {
-		//TODO: remove from reference holder
+		if _, ok := refHolder[ptr]; ok {
+			delete(refHolder, ptr)
+		}
+		ptr = unsafe.Pointer(nil)
 	} else if(osize != nsize) {
-		//TODO: remove old ptr from list if its in there
 		slice := make([]byte,nsize);
+
+		if oldslice, ok := refHolder[ptr]; ok {
+			copy(slice, oldslice)
+			_ = oldslice
+			delete(refHolder, ptr)
+		}
+
 		ptr = unsafe.Pointer(&(slice[0]));
-		//TODO: add slice to holder
-		l := len(refHolder);
-		refHolder = refHolder[0:l+1];
-		refHolder[l] = slice;
+		refHolder[ptr] = slice
 	}
 	//fmt.Println("in allocf");
 	return ptr;
@@ -33,7 +39,7 @@ func A2(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer {
 
 func main() {
 
-	refHolder = make([][]byte,0,500);
+	//refHolder = make([][]byte,0,500);
 
 	L := lua.NewStateAlloc(AllocatorF);
 	defer L.Close()

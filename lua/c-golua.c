@@ -2,6 +2,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 #include <stdint.h>
+#include <stdio.h>
 #include "_cgo_export.h"
 
 #define MT_GOFUNCTION "GoLua.GoFunction"
@@ -127,15 +128,23 @@ void clua_pushgostruct(lua_State* L, unsigned int iid)
 	lua_setmetatable(L,-2);
 }
 
+int default_panicf(lua_State *L)
+{
+	const char *s = lua_tostring(L, -1);
+	printf("Lua unprotected panic: %s\n", s);
+	abort();
+}
+
 void clua_setgostate(lua_State* L, GoInterface gi)
 {
+	lua_atpanic(L, default_panicf);
 	lua_pushlightuserdata(L,(void*)&GoStateRegistryKey);
 	GoInterface* gip = (GoInterface*)lua_newuserdata(L,sizeof(GoInterface));
 	//copy interface value to userdata
 	gip->v = gi.v;
 	gip->t = gi.t;
 	//set into registry table
-	lua_settable(L,LUA_REGISTRYINDEX);
+	lua_settable(L, LUA_REGISTRYINDEX);
 }
 
 /* called when lua code attempts to access a field of a published go object */
