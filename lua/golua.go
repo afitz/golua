@@ -57,7 +57,7 @@ func golua_interface_newindex_callback(Li interface{}, iid uint, field_name_cstr
 		fval = fval.Elem()
 	}
 
-	luatype := C.lua_type(L.s, 3)
+	luatype := LuaValType(C.lua_type(L.s, 3))
 
 	switch fval.Kind() {
 	case reflect.Bool:

@@ -267,7 +267,7 @@ func (L *State) Insert(index int) { C.lua_insert(L.s, C.int(index)) }
 
 // Returns true if lua_type == LUA_TBOOLEAN
 func (L *State) IsBoolean(index int) bool {
-	return int(C.lua_type(L.s, C.int(index))) == LUA_TBOOLEAN
+	return LuaValType(C.lua_type(L.s, C.int(index))) == LUA_TBOOLEAN
 }
 
 // Returns true if the value at index is a LuaGoFunction
@@ -282,19 +282,19 @@ func (L *State) IsGoStruct(index int) bool {
 
 // Returns true if the value at index is user data pushed with PushGoFunction
 func (L *State) IsFunction(index int) bool {
-	return int(C.lua_type(L.s, C.int(index))) == LUA_TFUNCTION
+	return LuaValType(C.lua_type(L.s, C.int(index))) == LUA_TFUNCTION
 }
 
 // Returns true if the value at index is light user data
 func (L *State) IsLightUserdata(index int) bool {
-	return int(C.lua_type(L.s, C.int(index))) == LUA_TLIGHTUSERDATA
+	return LuaValType(C.lua_type(L.s, C.int(index))) == LUA_TLIGHTUSERDATA
 }
 
 // lua_isnil
-func (L *State) IsNil(index int) bool { return int(C.lua_type(L.s, C.int(index))) == LUA_TNIL }
+func (L *State) IsNil(index int) bool { return LuaValType(C.lua_type(L.s, C.int(index))) == LUA_TNIL }
 
 // lua_isnone
-func (L *State) IsNone(index int) bool { return int(C.lua_type(L.s, C.int(index))) == LUA_TNONE }
+func (L *State) IsNone(index int) bool { return LuaValType(C.lua_type(L.s, C.int(index))) == LUA_TNONE }
 
 // lua_isnoneornil
 func (L *State) IsNoneOrNil(index int) bool { return int(C.lua_type(L.s, C.int(index))) <= 0 }
@@ -306,11 +306,11 @@ func (L *State) IsNumber(index int) bool { return C.lua_isnumber(L.s, C.int(inde
 func (L *State) IsString(index int) bool { return C.lua_isstring(L.s, C.int(index)) == 1 }
 
 // lua_istable
-func (L *State) IsTable(index int) bool { return int(C.lua_type(L.s, C.int(index))) == LUA_TTABLE }
+func (L *State) IsTable(index int) bool { return LuaValType(C.lua_type(L.s, C.int(index))) == LUA_TTABLE }
 
 // lua_isthread
 func (L *State) IsThread(index int) bool {
-	return int(C.lua_type(L.s, C.int(index))) == LUA_TTHREAD
+	return LuaValType(C.lua_type(L.s, C.int(index))) == LUA_TTHREAD
 }
 
 // lua_isuserdata
@@ -373,7 +373,7 @@ func (L *State) PushBoolean(b bool) {
 func (L *State) PushString(str string) {
 	Cstr := C.CString(str)
 	defer C.free(unsafe.Pointer(Cstr))
-	C.lua_pushstring(L.s, Cstr)
+	C.lua_pushlstring(L.s, Cstr, C.size_t(len(str)))
 }
 
 // lua_pushinteger
@@ -515,8 +515,8 @@ func (L *State) ToGoStruct(index int) (f interface{}) {
 // lua_tostring
 func (L *State) ToString(index int) string {
 	var size C.size_t
-	//C.GoString(C.lua_tolstring(L.s, C.int(index), &size));
-	return C.GoString(C.lua_tolstring(L.s, C.int(index), &size))
+	r := C.lua_tolstring(L.s, C.int(index), &size)
+	return C.GoStringN(r, C.int(size))
 }
 
 // lua_tointeger
@@ -546,8 +546,8 @@ func (L *State) ToUserdata(index int) unsafe.Pointer {
 }
 
 // lua_type
-func (L *State) Type(index int) int {
-	return int(C.lua_type(L.s, C.int(index)))
+func (L *State) Type(index int) LuaValType {
+	return LuaValType(C.lua_type(L.s, C.int(index)))
 }
 
 // lua_typename
