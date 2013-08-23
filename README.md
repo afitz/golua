@@ -100,13 +100,14 @@ ON THREADS AND COROUTINES
 CONTRIBUTORS
 ---------------------
 
-Adam Fitzgerald (original author)
-Alessandro Arzilli
-Steve Donovan
-Harley Laue
-James Nurmi
-Ruitao
-Xushiwei
+* Adam Fitzgerald (original author)
+* Alessandro Arzilli
+* Steve Donovan
+* Harley Laue
+* James Nurmi
+* Ruitao
+* Xushiwei
+* Isaint
 
 SEE ALSO
 ---------------------
