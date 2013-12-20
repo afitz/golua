@@ -100,10 +100,11 @@ ON THREADS AND COROUTINES
 
 'lua.State' is not thread safe, but the library itself is. Lua's coroutines exist but (to my knowledge) have never been tested and are likely to encounter the same problems that errors have, use at your own peril.
 
-LUA 5.2 SUPPORT
+ODDS AND ENDS
 ---------------------
 
-Support for lua 5.2 is in the lua5.2 branch, this branch only supports lua5.1.
+* Support for lua 5.2 is in the lua5.2 branch, this branch only supports lua5.1.
+* Compiling from source yields only a static link library (liblua.a), you can either produce the dynamic link library on your own or use the `luaa` build tag.
 
 CONTRIBUTORS
 ---------------------
@@ -116,6 +117,7 @@ CONTRIBUTORS
 * Ruitao
 * Xushiwei
 * Isaint
+* hsinhoyeh
 
 SEE ALSO
 ---------------------
