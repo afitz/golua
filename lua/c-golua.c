@@ -90,13 +90,13 @@ int gchook_wrapper(lua_State* L)
 
 unsigned int clua_togofunction(lua_State* L, int index)
 {
-	int *r = clua_checkgosomething(L, index, MT_GOFUNCTION);
+	unsigned int *r = clua_checkgosomething(L, index, MT_GOFUNCTION);
 	return (r != NULL) ? *r : -1;
 }
 
 unsigned int clua_togostruct(lua_State *L, int index)
 {
-	int *r = clua_checkgosomething(L, index, MT_GOINTERFACE);
+	unsigned int *r = clua_checkgosomething(L, index, MT_GOINTERFACE);
 	return (r != NULL) ? *r : -1;
 }
 
@@ -215,6 +215,7 @@ int panic_msghandler(lua_State *L)
 {
 	GoInterface* gi = clua_getgostate(L);
 	go_panic_msghandler(*gi, (char *)lua_tolstring(L, -1, NULL));
+	return 0;
 }
 
 void clua_hide_pcall(lua_State *L)
