@@ -1,12 +1,11 @@
-package lua51
+package golua
 
 //#include <lua.h>
 //#include "golua.h"
+//#include <stdlib.h>
 import "C"
 
 import "unsafe"
-//TODO: remove
-import "fmt"
 
 
 
@@ -101,23 +100,22 @@ func golua_callgofunction(L interface{}, fid uint) int {
 func golua_gchook(L interface{}, id uint) int {
 	L1 := L.(*State);
 	L1.unregister(id);
-	fmt.Printf("GC id: %d\n",id);
 	return 0;
 }
 
-//export golua_callpanicfunction
+//export callpanicfunction
 func callpanicfunction(L interface{}, id uint) int {
 	L1 := L.(*State);
 	f := L1.registry[id].(GoFunction);
 	return f(L1);
 }
 
-//export golua_idtointerface
+//export idtointerface
 func idtointerface(id uint) interface{} {
 	return id;
 }
 
-//export golua_cfunctiontointerface
+//export cfunctiontointerface
 func cfunctiontointerface(f *uintptr) interface{} {
 	return f;
 }
@@ -156,7 +154,7 @@ func (L *State) NewUserdata(size uintptr) unsafe.Pointer {
 
 
 type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer;
-//export golua_callallocf
+//export callAllocf
 func callAllocf(fp uintptr,	ptr uintptr,
 			    osize uint,			nsize uint) uintptr {
 	return uintptr((*((*Alloc)(unsafe.Pointer(fp))))(unsafe.Pointer(ptr),osize,nsize));
@@ -183,7 +181,6 @@ func (L *State) AtPanic(panicf GoFunction) (oldpanicf GoFunction) {
 	//potentially dangerous because we may silently fail 
 	return nil;
 }
-
 
 func (L *State) Call(nargs int, nresults int) {
 	C.lua_call(L.s,C.int(nargs),C.int(nresults));
@@ -228,7 +225,9 @@ func (L *State) GC(what, data int) int	{ return int(C.lua_gc(L.s, C.int(what), C
 func (L *State) GetfEnv(index int)	{ C.lua_getfenv(L.s, C.int(index)) }
 
 func (L *State) GetField(index int, k string) {
-	C.lua_getfield(L.s, C.int(index), C.CString(k))
+	Ck := C.CString(k)
+	defer C.free(unsafe.Pointer(Ck))
+	C.lua_getfield(L.s, C.int(index), Ck)
 }
 
 func (L *State) GetGlobal(name string)	{ L.GetField(LUA_GLOBALSINDEX, name) }
@@ -341,7 +340,9 @@ func (L *State) PushBoolean(b bool) {
 }
 
 func (L *State) PushString(str string) {
-	C.lua_pushstring(L.s,C.CString(str));
+	Cstr := C.CString(str)
+	defer C.free(unsafe.Pointer(Cstr))
+	C.lua_pushstring(L.s,Cstr)
 }
 
 func (L *State) PushInteger(n int) {
@@ -410,11 +411,15 @@ func (L *State) SetfEnv(index int) {
 }
 
 func (L *State) SetField(index int, k string) {
-	C.lua_setfield(L.s, C.int(index), C.CString(k));
+	Ck := C.CString(k)
+	defer C.free(unsafe.Pointer(Ck))
+	C.lua_setfield(L.s, C.int(index), Ck)
 }
 
 func (L *State) SetGlobal(name string) {
-	C.lua_setfield(L.s, C.int(LUA_GLOBALSINDEX), C.CString(name))
+	Cname := C.CString(name)
+	defer C.free(unsafe.Pointer(Cname))
+	C.lua_setfield(L.s, C.int(LUA_GLOBALSINDEX), Cname)
 }
 
 func (L *State) SetMetaTable(index int) {
@@ -517,4 +522,8 @@ func (L *State) OpenTable() {
 
 func (L *State) OpenOS() {
         C.clua_openos(L.s);
+}
+
+func (L *State) SetExecutionLimit(instrNumber int) {
+	C.clua_setexecutionlimit(L.s, C.int(instrNumber));
 }

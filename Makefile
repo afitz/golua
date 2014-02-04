@@ -1,18 +1,80 @@
+# Copyright 2009 The Go Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
-LUA51_DIR=lua51
+include $(GOROOT)/src/Make.inc
 
-all: $(LUA51_DIR)/_obj/lua51.a examples
+CGO_CFLAGS+=-Ilua-5.1.4/src
+CGO_DEPS=_cgo_export.o
+CGO_LDFLAGS+=-lm
+CGO_OFILES=\
+		   lua-5.1.4/src/lapi.o \
+		   lua-5.1.4/src/lauxlib.o \
+		   lua-5.1.4/src/lbaselib.o \
+		   lua-5.1.4/src/lcode.o \
+		   lua-5.1.4/src/ldblib.o \
+		   lua-5.1.4/src/ldebug.o \
+		   lua-5.1.4/src/ldo.o \
+		   lua-5.1.4/src/ldump.o \
+		   lua-5.1.4/src/lfunc.o \
+		   lua-5.1.4/src/lgc.o \
+		   lua-5.1.4/src/linit.o \
+		   lua-5.1.4/src/liolib.o \
+		   lua-5.1.4/src/llex.o \
+		   lua-5.1.4/src/lmathlib.o \
+		   lua-5.1.4/src/lmem.o \
+		   lua-5.1.4/src/loadlib.o \
+		   lua-5.1.4/src/lobject.o \
+		   lua-5.1.4/src/lopcodes.o \
+		   lua-5.1.4/src/loslib.o \
+		   lua-5.1.4/src/lparser.o \
+		   lua-5.1.4/src/lstate.o \
+		   lua-5.1.4/src/lstring.o \
+		   lua-5.1.4/src/lstrlib.o \
+		   lua-5.1.4/src/ltable.o \
+		   lua-5.1.4/src/ltablib.o \
+		   lua-5.1.4/src/ltm.o \
+		   lua-5.1.4/src/lundump.o \
+		   lua-5.1.4/src/lvm.o \
+		   lua-5.1.4/src/lzio.o \
+		   lua-5.1.4/src/print.o \
+		   golua.o \
 
-$(LUA51_DIR)/_obj/lua51.a:
-	cd $(LUA51_DIR) && make 
+TARG=golua
+
+CGOFILES=\
+	lua.go \
+	lauxlib.go \
+	lua_defs.go
+
+CLEANFILES+=lua-5.1.4/src/*.o\
+			example/*.8\
+			example/basic\
+			example/alloc\
+			example/panic\
+			example/userdata\
+
+LUA_HEADERS=lua.h lauxlib.h lualib.h
+LUA_HEADER_FILES:=$(patsubst %,lua-5.1.4/src/%,$(LUA_HEADERS))
+LUA_INCLUDE_DIRECTIVES:=$(patsubst %,//\#include <%>\n, $(LUA_HEADERS))
+
+include $(GOROOT)/src/Make.pkg
+
+all: install examples
+
+%: install %.go
+	$(QUOTED_GOBIN)/$(GC) $*.go
+	$(QUOTED_GOBIN)/$(LD) -o $@ $*.$O
+
+golua.o: golua.c
+	gcc $(CGO_CFLAGS) $(_CGO_CFLAGS_$(GOARCH)) -fPIC $(CFLAGS) -c golua.c -o golua.o
+
+genluadefs:
+	echo "package golua;" > lua_defs.go
+	echo "$(LUA_INCLUDE_DIRECTIVES)" "import \"C\"" >> lua_defs.go
+	echo "const (" >> lua_defs.go
+	cat $(LUA_HEADER_FILES) | grep '#define LUA' | sed 's/#define/  /' | sed 's/\([A-Z_][A-Z_]*\)[[:space:]]*.*/\1 = C.\1/'  >> lua_defs.go
+	echo ")" >> lua_defs.go
 
 examples: install
 	cd example && make
-
-clean:
-	cd example && make clean
-	cd $(LUA51_DIR) && make clean
-
-install:
-	cd $(LUA51_DIR) && make install
-	

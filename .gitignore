@@ -1,0 +1,15 @@
+_cgo_defun.c
+_cgo_export.c
+_cgo_export.h
+_cgo_gotypes.go
+_cgo_import.c
+_cgo_main.c
+_obj/
+lauxlib.cgo1.go
+lauxlib.cgo2.c
+lua.cgo1.go
+lua.cgo2.c
+lua_defs.cgo1.go
+lua_defs.cgo2.c
+*.[568]
+*.o
