@@ -118,6 +118,7 @@ CONTRIBUTORS
 * Xushiwei
 * Isaint
 * hsinhoyeh
+* Viktor Palmkvist
 
 SEE ALSO
 ---------------------
