@@ -79,7 +79,7 @@ func (L *State) CheckOption(narg int, def string, lst []string) int {
 }
 
 // luaL_checktype
-func (L *State) CheckType(narg int, t int) {
+func (L *State) CheckType(narg int, t LuaValType) {
 	C.luaL_checktype(L.s, C.int(narg), C.int(t))
 }
 
