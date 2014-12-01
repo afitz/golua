@@ -11,7 +11,7 @@ package lua
 #cgo luaa LDFLAGS: -llua -lm -ldl
 #cgo linux,!llua,!luaa LDFLAGS: -llua5.1
 #cgo darwin,!luaa LDFLAGS: -llua
-#cgo freebsd,!luaa LDFLAGS: -llua
+#cgo freebsd,!luaa LDFLAGS: -llua-5.1
 
 #include <lua.h>
 #include <stdlib.h>
