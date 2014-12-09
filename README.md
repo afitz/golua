@@ -119,6 +119,7 @@ CONTRIBUTORS
 * Isaint
 * hsinhoyeh
 * Viktor Palmkvist
+* HongZhen Peng
 
 SEE ALSO
 ---------------------
