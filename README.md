@@ -106,6 +106,17 @@ ODDS AND ENDS
 * Support for lua 5.2 is in the lua5.2 branch, this branch only supports lua5.1.
 * Compiling from source yields only a static link library (liblua.a), you can either produce the dynamic link library on your own or use the `luaa` build tag.
 
+LUAJIT
+---------------------
+
+To link with [luajit-2.0.x](http://luajit.org/luajit.html), you can use CGO_CFLAGS and CGO_LDFLAGS environment variables
+
+```
+$ CGO_CFLAGS=`pkg-config luajit --cflags`
+$ CGO_LDFLAGS=`pkg-config luajit --libs`
+$ go get -f -u github.com/aarzilli/golua/lua
+```
+
 CONTRIBUTORS
 ---------------------
 
