@@ -6,11 +6,12 @@
 package lua
 
 /*
+#cgo pkg-config: lua5.1
 #cgo CFLAGS: -Ilua
 #cgo llua LDFLAGS: -llua
 #cgo luaa LDFLAGS: -llua -lm -ldl
 #cgo linux,!llua,!luaa LDFLAGS: -llua5.1
-#cgo darwin,!luaa LDFLAGS: -llua
+#cgo darwin,!luaa pkg-config: lua5.1
 #cgo freebsd,!luaa LDFLAGS: -llua-5.1
 
 #include <lua.h>
