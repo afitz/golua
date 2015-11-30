@@ -28,7 +28,7 @@ func (err *LuaError) StackTrace() []LuaStackEntry {
 
 // luaL_argcheck
 func (L *State) ArgCheck(cond bool, narg int, extramsg string) {
-	if cond {
+	if !cond {
 		Cextramsg := C.CString(extramsg)
 		defer C.free(unsafe.Pointer(Cextramsg))
 		C.luaL_argerror(L.s, C.int(narg), Cextramsg)
