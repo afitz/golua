@@ -132,6 +132,7 @@ CONTRIBUTORS
 * Viktor Palmkvist
 * HongZhen Peng
 * Admin36
+* Pierre Neidhardt (@Ambrevar)
 
 SEE ALSO
 ---------------------
