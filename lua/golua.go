@@ -95,7 +95,7 @@ func golua_interface_newindex_callback(gostateindex int, iid uint, field_name_cs
 			fval.SetBool(int(C.lua_toboolean(L.s, 3)) != 0)
 			return 1
 		} else {
-			L.PushString("Wrong assignment to field "+field_name)
+			L.PushString("Wrong assignment to field " + field_name)
 			return -1
 		}
 
@@ -112,7 +112,7 @@ func golua_interface_newindex_callback(gostateindex int, iid uint, field_name_cs
 			fval.SetInt(int64(C.lua_tointeger(L.s, 3)))
 			return 1
 		} else {
-			L.PushString("Wrong assignment to field "+field_name)
+			L.PushString("Wrong assignment to field " + field_name)
 			return -1
 		}
 
@@ -129,7 +129,7 @@ func golua_interface_newindex_callback(gostateindex int, iid uint, field_name_cs
 			fval.SetUint(uint64(C.lua_tointeger(L.s, 3)))
 			return 1
 		} else {
-			L.PushString("Wrong assignment to field "+field_name)
+			L.PushString("Wrong assignment to field " + field_name)
 			return -1
 		}
 
@@ -138,7 +138,7 @@ func golua_interface_newindex_callback(gostateindex int, iid uint, field_name_cs
 			fval.SetString(C.GoString(C.lua_tolstring(L.s, 3, nil)))
 			return 1
 		} else {
-			L.PushString("Wrong assignment to field "+field_name)
+			L.PushString("Wrong assignment to field " + field_name)
 			return -1
 		}
 
@@ -149,12 +149,12 @@ func golua_interface_newindex_callback(gostateindex int, iid uint, field_name_cs
 			fval.SetFloat(float64(C.lua_tonumber(L.s, 3)))
 			return 1
 		} else {
-			L.PushString("Wrong assignment to field "+field_name)
+			L.PushString("Wrong assignment to field " + field_name)
 			return -1
 		}
 	}
 
-	L.PushString("Unsupported type of field "+field_name+": "+fval.Type().String())
+	L.PushString("Unsupported type of field " + field_name + ": " + fval.Type().String())
 	return -1
 }
 
@@ -210,7 +210,7 @@ func golua_interface_index_callback(gostateindex int, iid uint, field_name *C.ch
 		return 1
 	}
 
-	L.PushString("Unsupported type of field: "+fval.Type().String())
+	L.PushString("Unsupported type of field: " + fval.Type().String())
 	return -1
 }
 
