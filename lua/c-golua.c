@@ -55,13 +55,13 @@ unsigned int* clua_checkgosomething(lua_State* L, int index, const char *desired
 	}
 }
 
-int clua_getgostate(lua_State* L)
+size_t clua_getgostate(lua_State* L)
 {
-	int gostateindex;
+	size_t gostateindex;
 	//get gostate from registry entry
 	lua_pushlightuserdata(L,(void*)&GoStateRegistryKey);
 	lua_gettable(L, LUA_REGISTRYINDEX);
-	gostateindex = lua_tointeger(L,-1);
+	gostateindex = (size_t)lua_touserdata(L,-1);
 	lua_pop(L,1);
 	return gostateindex;
 }
@@ -72,7 +72,7 @@ int callback_function(lua_State* L)
 {
 	int r;
 	unsigned int *fid = clua_checkgosomething(L, 1, MT_GOFUNCTION);
-	int gostateindex = clua_getgostate(L);
+	size_t gostateindex = clua_getgostate(L);
 	//remove the go function from the stack (to present same behavior as lua_CFunctions)
 	lua_remove(L,1);
 	return golua_callgofunction(gostateindex, fid!=NULL ? *fid : -1);
@@ -83,7 +83,7 @@ int gchook_wrapper(lua_State* L)
 {
 	//printf("Garbage collection wrapper\n");
 	unsigned int* fid = clua_checkgosomething(L, -1, NULL);
-	int gostateindex = clua_getgostate(L);
+	size_t gostateindex = clua_getgostate(L);
 	if (fid != NULL)
 		return golua_gchook(gostateindex,*fid);
 	return 0;
@@ -112,7 +112,7 @@ void clua_pushgofunction(lua_State* L, unsigned int fid)
 static int callback_c (lua_State* L)
 {
 	int fid = clua_togofunction(L,lua_upvalueindex(1));
-	int gostateindex = clua_getgostate(L);
+	size_t gostateindex = clua_getgostate(L);
 	return golua_callgofunction(gostateindex,fid);
 }
 
@@ -136,11 +136,11 @@ int default_panicf(lua_State *L)
 	abort();
 }
 
-void clua_setgostate(lua_State* L, int gostateindex)
+void clua_setgostate(lua_State* L, size_t gostateindex)
 {
 	lua_atpanic(L, default_panicf);
 	lua_pushlightuserdata(L,(void*)&GoStateRegistryKey);
-	lua_pushinteger(L, gostateindex);
+	lua_pushlightuserdata(L, (void*)gostateindex);
 	//set into registry table
 	lua_settable(L, LUA_REGISTRYINDEX);
 }
@@ -162,7 +162,7 @@ int interface_index_callback(lua_State *L)
 		return 1;
 	}
 
-	int gostateindex = clua_getgostate(L);
+	size_t gostateindex = clua_getgostate(L);
 
 	int r = golua_interface_index_callback(gostateindex, *iid, field_name);
 
@@ -194,7 +194,7 @@ int interface_newindex_callback(lua_State *L)
 		return 1;
 	}
 
-	int gostateindex = clua_getgostate(L);
+	size_t gostateindex = clua_getgostate(L);
 
 	int r = golua_interface_newindex_callback(gostateindex, *iid, field_name);
 
@@ -211,7 +211,7 @@ int interface_newindex_callback(lua_State *L)
 
 int panic_msghandler(lua_State *L)
 {
-	int gostateindex = clua_getgostate(L);
+	size_t gostateindex = clua_getgostate(L);
 	go_panic_msghandler(gostateindex, (char *)lua_tolstring(L, -1, NULL));
 	return 0;
 }
@@ -273,7 +273,7 @@ int callback_panicf(lua_State* L)
 	lua_gettable(L,LUA_REGISTRYINDEX);
 	unsigned int fid = lua_tointeger(L,-1);
 	lua_pop(L,1);
-	int gostateindex = clua_getgostate(L);
+	size_t gostateindex = clua_getgostate(L);
 	return golua_callpanicfunction(gostateindex,fid);
 
 }
