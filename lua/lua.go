@@ -385,6 +385,10 @@ func (L *State) PushString(str string) {
 	C.lua_pushlstring(L.s, Cstr, C.size_t(len(str)))
 }
 
+func (L *State) PushBytes(b []byte) {
+	C.lua_pushlstring(L.s, (*C.char)(unsafe.Pointer(&b[0])), C.size_t(len(b)))
+}
+
 // lua_pushinteger
 func (L *State) PushInteger(n int64) {
 	C.lua_pushinteger(L.s, C.lua_Integer(n))
@@ -534,6 +538,12 @@ func (L *State) ToString(index int) string {
 	var size C.size_t
 	r := C.lua_tolstring(L.s, C.int(index), &size)
 	return C.GoStringN(r, C.int(size))
+}
+
+func (L *State) ToBytes(index int) []byte {
+	var size C.size_t
+	b := C.lua_tolstring(L.s, C.int(index), &size)
+	return C.GoBytes(unsafe.Pointer(b), C.int(size))
 }
 
 // lua_tointeger

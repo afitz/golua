@@ -73,6 +73,8 @@ func golua_callgofunction(gostateindex uintptr, fid uint) int {
 	return f(L1)
 }
 
+var typeOfBytes = reflect.TypeOf([]byte(nil))
+
 //export golua_interface_newindex_callback
 func golua_interface_newindex_callback(gostateindex uintptr, iid uint, field_name_cstr *C.char) int {
 	L := getGoState(gostateindex)
@@ -152,6 +154,16 @@ func golua_interface_newindex_callback(gostateindex uintptr, iid uint, field_nam
 			L.PushString("Wrong assignment to field " + field_name)
 			return -1
 		}
+	case reflect.Slice:
+		if fval.Type() == typeOfBytes {
+			if luatype == LUA_TSTRING {
+				fval.SetBytes(L.ToBytes(3))
+				return 1
+			} else {
+				L.PushString("Wrong assignment to field " + field_name)
+				return -1
+			}
+		}
 	}
 
 	L.PushString("Unsupported type of field " + field_name + ": " + fval.Type().String())
@@ -208,6 +220,11 @@ func golua_interface_index_callback(gostateindex uintptr, iid uint, field_name *
 	case reflect.Float64:
 		L.PushNumber(fval.Float())
 		return 1
+	case reflect.Slice:
+		if fval.Type() == typeOfBytes {
+			L.PushBytes(fval.Bytes())
+			return 1
+		}
 	}
 
 	L.PushString("Unsupported type of field: " + fval.Type().String())
