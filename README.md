@@ -137,7 +137,8 @@ CONTRIBUTORS
 SEE ALSO
 ---------------------
 
-[Luar](https://github.com/stevedonovan/luar/) is a reflection layer on top of golua API providing a simplified way to publish go functions to a Lua VM.
+- [Luar](https://github.com/stevedonovan/luar/) is a reflection layer on top of golua API providing a simplified way to publish go functions to a Lua VM.
+- [Golua unicode](https://bitbucket.org/ambrevar/golua/) is an extension library that adds unicode support to golua and replaces lua regular expressions with re2.
 
 Licensing
 -------------
