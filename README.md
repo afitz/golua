@@ -133,6 +133,7 @@ CONTRIBUTORS
 * HongZhen Peng
 * Admin36
 * Pierre Neidhardt (@Ambrevar)
+* HuangWei (@huangwei1024)
 
 SEE ALSO
 ---------------------
