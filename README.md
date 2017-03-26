@@ -104,6 +104,7 @@ ODDS AND ENDS
 ---------------------
 
 * Support for lua 5.2 is in the lua5.2 branch, this branch only supports lua5.1.
+* Support for lua 5.3 is in the lua5.3 branch.
 * Compiling from source yields only a static link library (liblua.a), you can either produce the dynamic link library on your own or use the `luaa` build tag.
 
 LUAJIT
