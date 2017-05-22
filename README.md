@@ -1,6 +1,8 @@
 Go Bindings for the lua C API
 =========================
 
+[![Build Status](https://travis-ci.org/aarzilli/golua.svg?branch=master)](https://travis-ci.org/aarzilli/golua)
+
 Simplest way to install:
 
 	# go get -u github.com/aarzilli/golua/lua
