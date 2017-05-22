@@ -6,7 +6,7 @@
 package lua
 
 /*
-#cgo CFLAGS: -Ilua
+#cgo CFLAGS: -I ${SRCDIR}/lua
 #cgo llua LDFLAGS: -llua
 #cgo luaa LDFLAGS: -llua -lm -ldl
 #cgo linux,!llua,!luaa LDFLAGS: -llua5.1
