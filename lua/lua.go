@@ -77,7 +77,11 @@ func (L *State) register(f interface{}) uint {
 		index = uint(len(L.registry))
 		//reallocate backing array if necessary
 		if index+1 > uint(cap(L.registry)) {
-			newSlice := make([]interface{}, index, cap(L.registry)*2)
+			newcap := cap(L.registry)*2
+			if index+1 > uint(newcap) {
+				newcap = int(index+1)
+			}
+			newSlice := make([]interface{}, index, newcap)
 			copy(newSlice, L.registry)
 			L.registry = newSlice
 		}
