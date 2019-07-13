@@ -156,6 +156,25 @@ func (L *State) LoadString(s string) int {
 	return int(C.luaL_loadstring(L.s, Cs))
 }
 
+// lua_dump
+func (L *State) Dump() int {
+	ret := int(C.dump_chunk(L.s))
+	return ret
+}
+
+// lua_load
+func (L *State) Load(bs []byte, name string) int {
+	chunk := C.CString(string(bs))
+	ckname := C.CString(name)
+	defer C.free(unsafe.Pointer(chunk))
+	defer C.free(unsafe.Pointer(ckname))
+	ret := int(C.load_chunk(L.s, chunk, C.int(len(bs)), ckname))
+	if ret != 0 {
+		return ret
+	}
+	return 0
+}
+
 // luaL_newmetatable
 func (L *State) NewMetaTable(tname string) bool {
 	Ctname := C.CString(tname)

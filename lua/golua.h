@@ -14,6 +14,8 @@ void clua_pushcallback(lua_State* L);
 void clua_pushgofunction(lua_State* L, unsigned int fid);
 void clua_pushgostruct(lua_State *L, unsigned int fid);
 void clua_setgostate(lua_State* L, size_t gostateindex);
+int dump_chunk (lua_State *L);
+int load_chunk(lua_State *L, const char *b, int size, const char* chunk_name);
 size_t clua_getgostate(lua_State* L);
 GoInterface clua_atpanic(lua_State* L, unsigned int panicf_id);
 int clua_callluacfunc(lua_State* L, lua_CFunction f);

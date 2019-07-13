@@ -13,6 +13,12 @@
 static const char GoStateRegistryKey = 'k'; //golua registry key
 static const char PanicFIDRegistryKey = 'k';
 
+typedef struct _chunk {
+	int size; // chunk size
+	char *buffer; // chunk data
+	char* toread; // chunk to read
+} chunk;
+
 /* taken from lua5.2 source */
 void *testudata(lua_State *L, int ud, const char *tname)
 {
@@ -143,6 +149,56 @@ void clua_setgostate(lua_State* L, size_t gostateindex)
 	lua_pushlightuserdata(L, (void*)gostateindex);
 	//set into registry table
 	lua_settable(L, LUA_REGISTRYINDEX);
+}
+
+static int writer (lua_State *L, const void* b, size_t size, void* B) {
+	static int count=0;
+	(void)L;
+	luaL_addlstring((luaL_Buffer*) B, (const char *)b, size);
+	return 0;
+}
+
+// dump function chunk from luaL_loadstring
+int dump_chunk (lua_State *L) {
+	luaL_Buffer b;
+	luaL_checktype(L, -1, LUA_TFUNCTION);
+	lua_settop(L, -1);
+	luaL_buffinit(L,&b);
+	int errno;
+	errno = lua_dump(L, writer, &b);
+	if (errno != 0){
+	return luaL_error(L, "unable to dump given function, errno:%d", errno);
+	}
+	luaL_pushresult(&b);
+	return 0;
+}
+
+static const char * reader (lua_State *L, void *ud, size_t *sz) {
+	chunk *ck = (chunk *)ud;
+	if (ck->size > LUAL_BUFFERSIZE) {
+		ck->size -= LUAL_BUFFERSIZE;
+		*sz = LUAL_BUFFERSIZE;
+		ck->toread = ck->buffer;
+		ck->buffer += LUAL_BUFFERSIZE;
+	}else{
+		*sz = ck->size;
+		ck->toread = ck->buffer;
+		ck->size = 0;
+	}
+	return ck->toread;
+}
+
+// load function chunk dumped from dump_chunk
+int load_chunk(lua_State *L, char *b, int size, const char* chunk_name) {
+	chunk ck;
+	ck.buffer = b;
+	ck.size = size;
+	int errno;
+	errno = lua_load(L, reader, &ck, chunk_name);
+	if (errno != 0) {
+		return luaL_error(L, "unable to load chunk, errno: %d", errno);
+	}
+	return 0;
 }
 
 /* called when lua code attempts to access a field of a published go object */
