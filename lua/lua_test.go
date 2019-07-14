@@ -382,3 +382,32 @@ func TestConv(t *testing.T) {
 		t.Fatalf("Wrong conversion (str -> str): <%s>", s)
 	}
 }
+
+func TestDumpAndLoad(t *testing.T) {
+	L := NewState()
+	defer L.Close()
+	L.OpenLibs()
+	
+	loadret := L.LoadString(`print("msg from dump_and_load_test")`)
+	if loadret != 0 {
+		t.Fatalf("LoadString error: %v", loadret)
+	}
+	dumpret := L.Dump()
+	if dumpret != 0 {
+		t.Fatalf("Dump error: %v", dumpret)
+	}
+
+	isstring := L.IsString(-1)
+	if !isstring {
+		t.Fatalf("stack top not a string")
+	}
+	bytecodes := L.ToBytes(-1)
+	loadret = L.Load(bytecodes, "chunk_from_dump_and_load_test")
+	if loadret != 0 {
+		t.Fatalf("Load error: %v", loadret)
+	}
+	err := L.Call(0, 0)
+	if err != nil {
+		t.Fatalf("Call error: %v", err)
+	}
+}
