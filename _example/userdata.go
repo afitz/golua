@@ -1,30 +1,30 @@
 package main
 
-import "../lua"
+import "github.com/aarzilli/golua/lua"
 import "unsafe"
 import "fmt"
 
 type Userdata struct {
-	a,b int
+	a, b int
 }
 
 func userDataProper(L *lua.State) {
-	rawptr := L.NewUserdata(uintptr(unsafe.Sizeof(Userdata{})));
-	var ptr *Userdata;
-	ptr = (*Userdata)(rawptr);
-	ptr.a = 2;
-	ptr.b = 3;
+	rawptr := L.NewUserdata(uintptr(unsafe.Sizeof(Userdata{})))
+	var ptr *Userdata
+	ptr = (*Userdata)(rawptr)
+	ptr.a = 2
+	ptr.b = 3
 
-	fmt.Println(ptr);
+	fmt.Println(ptr)
 
-	rawptr2 := L.ToUserdata(-1);
-	ptr2 := (*Userdata)(rawptr2);
+	rawptr2 := L.ToUserdata(-1)
+	ptr2 := (*Userdata)(rawptr2)
 
-	fmt.Println(ptr2);
+	fmt.Println(ptr2)
 }
 
 func example_function(L *lua.State) int {
-	fmt.Println("Heeeeelllllooooooooooo nuuurse!!!!");
+	fmt.Println("Heeeeelllllooooooooooo nuuurse!!!!")
 	return 0
 }
 
@@ -64,22 +64,22 @@ func goDefinedObjects(L *lua.State) {
 
 	/* This code demonstrates access and assignment to a field of a go object */
 	L.MustDoString("print('AField of t is: ' .. t.AField .. ' before assignment');")
-	L.MustDoString("t.AField = 10;");
-	L.MustDoString("print('AField of t is: ' .. t.AField .. ' after assignment');");
+	L.MustDoString("t.AField = 10;")
+	L.MustDoString("print('AField of t is: ' .. t.AField .. ' after assignment');")
 }
 
 func main() {
 	L := lua.NewState()
 	defer L.Close()
-	L.OpenLibs();
+	L.OpenLibs()
 
 	/*
-	This function stores a go object inside Lua VM
+		This function stores a go object inside Lua VM
 	*/
 	userDataProper(L)
 
 	/*
-	This function demonstrates exposing a function implemented in go to interpreted Lua code
+		This function demonstrates exposing a function implemented in go to interpreted Lua code
 	*/
 	goDefinedFunctions(L)
 

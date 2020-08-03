@@ -1,23 +1,22 @@
 package main
 
-import "../lua"
+import "github.com/aarzilli/golua/lua"
 import "unsafe"
 import "fmt"
 
 var refHolder = map[unsafe.Pointer][]byte{}
 
-
 //a terrible allocator!
 //meant to be illustrative of the mechanics,
 //not usable as an actual implementation
 func AllocatorF(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer {
-	if(nsize == 0) {
+	if nsize == 0 {
 		if _, ok := refHolder[ptr]; ok {
 			delete(refHolder, ptr)
 		}
 		ptr = unsafe.Pointer(nil)
-	} else if(osize != nsize) {
-		slice := make([]byte,nsize);
+	} else if osize != nsize {
+		slice := make([]byte, nsize)
 
 		if oldslice, ok := refHolder[ptr]; ok {
 			copy(slice, oldslice)
@@ -25,33 +24,32 @@ func AllocatorF(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer {
 			delete(refHolder, ptr)
 		}
 
-		ptr = unsafe.Pointer(&(slice[0]));
+		ptr = unsafe.Pointer(&(slice[0]))
 		refHolder[ptr] = slice
 	}
 	//fmt.Println("in allocf");
-	return ptr;
+	return ptr
 }
 
-
 func A2(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer {
-	return AllocatorF(ptr,osize,nsize);
+	return AllocatorF(ptr, osize, nsize)
 }
 
 func main() {
 
 	//refHolder = make([][]byte,0,500);
 
-	L := lua.NewStateAlloc(AllocatorF);
+	L := lua.NewStateAlloc(AllocatorF)
 	defer L.Close()
-	L.OpenLibs();
+	L.OpenLibs()
 
-	L.SetAllocf(A2);
+	L.SetAllocf(A2)
 
-	for i:=0; i < 10; i++ {
-		L.GetField(lua.LUA_GLOBALSINDEX, "print");
-		L.PushString("Hello World!");
-		L.Call(1,0);
+	for i := 0; i < 10; i++ {
+		L.GetField(lua.LUA_GLOBALSINDEX, "print")
+		L.PushString("Hello World!")
+		L.Call(1, 0)
 	}
 
-	fmt.Println(len(refHolder));
+	fmt.Println(len(refHolder))
 }

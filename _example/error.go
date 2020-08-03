@@ -1,6 +1,6 @@
 package main
 
-import "../lua"
+import "github.com/aarzilli/golua/lua"
 import "fmt"
 import "errors"
 import "os"
