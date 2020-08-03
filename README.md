@@ -12,6 +12,10 @@ If your linux system uses "lua" as the shared object name for lua (for example, 
 
 	# go get -u -tags llua github.com/aarzilli/golua/lua
 
+If your linux system uses "lua-5.1" as the shared object name for lua (for example, some versions of CentOS do this) you can install using:
+
+	# go get -u -tags lluadash5.1 github.com/aarzilli/golua/lua
+
 
 You can then try to run the examples:
 
