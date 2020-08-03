@@ -336,7 +336,7 @@ func TestStackTrace(t *testing.T) {
 	defer L.Close()
 	L.OpenLibs()
 
-	err := L.DoFile("../example/calls.lua")
+	err := L.DoFile("../_example/calls.lua")
 	if err == nil {
 		t.Fatal("No error returned from the execution of calls.lua")
 	}
@@ -387,7 +387,7 @@ func TestDumpAndLoad(t *testing.T) {
 	L := NewState()
 	defer L.Close()
 	L.OpenLibs()
-	
+
 	loadret := L.LoadString(`print("msg from dump_and_load_test")`)
 	if loadret != 0 {
 		t.Fatalf("LoadString error: %v", loadret)
