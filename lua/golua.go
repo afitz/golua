@@ -1,7 +1,9 @@
 package lua
 
 /*
-#cgo CFLAGS: -I ${SRCDIR}/lua
+#cgo !lua52,!lua53 CFLAGS: -I ${SRCDIR}/lua51
+#cgo lua52 CFLAGS: -I ${SRCDIR}/lua52
+#cgo lua53 CFLAGS: -I ${SRCDIR}/lua53
 
 #include <lua.h>
 #include <lualib.h>
@@ -111,7 +113,7 @@ func golua_interface_newindex_callback(gostateindex uintptr, iid uint, field_nam
 		fallthrough
 	case reflect.Int64:
 		if luatype == LUA_TNUMBER {
-			fval.SetInt(int64(C.lua_tointeger(L.s, 3)))
+			fval.SetInt(int64(luaToInteger(L.s, 3)))
 			return 1
 		} else {
 			L.PushString("Wrong assignment to field " + field_name)
@@ -128,7 +130,7 @@ func golua_interface_newindex_callback(gostateindex uintptr, iid uint, field_nam
 		fallthrough
 	case reflect.Uint64:
 		if luatype == LUA_TNUMBER {
-			fval.SetUint(uint64(C.lua_tointeger(L.s, 3)))
+			fval.SetUint(uint64(luaToInteger(L.s, 3)))
 			return 1
 		} else {
 			L.PushString("Wrong assignment to field " + field_name)
@@ -148,7 +150,7 @@ func golua_interface_newindex_callback(gostateindex uintptr, iid uint, field_nam
 		fallthrough
 	case reflect.Float64:
 		if luatype == LUA_TNUMBER {
-			fval.SetFloat(float64(C.lua_tonumber(L.s, 3)))
+			fval.SetFloat(float64(luaToNumber(L.s, 3)))
 			return 1
 		} else {
 			L.PushString("Wrong assignment to field " + field_name)

@@ -14,7 +14,7 @@ func main() {
 	defer L.Close()
 	L.OpenLibs()
 
-	L.GetField(lua.LUA_GLOBALSINDEX, "print")
+	L.GetGlobal("print")
 	L.PushString("Hello World!")
 	L.Call(1, 0)
 

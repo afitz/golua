@@ -5,25 +5,27 @@ Go Bindings for the lua C API
 
 Simplest way to install:
 
-	# go get -u github.com/aarzilli/golua/lua
-
-Will work as long as your compiler can find a shared object called lua5.1 on linux, or lua anywhere else.
-If your linux system uses "lua" as the shared object name for lua (for example, Fedora Core does this) you can install using:
-
-	# go get -u -tags llua github.com/aarzilli/golua/lua
-
-If your linux system uses "lua-5.1" as the shared object name for lua (for example, some versions of CentOS do this) you can install using:
-
-	# go get -u -tags lluadash5.1 github.com/aarzilli/golua/lua
-
+	# go get github.com/aarzilli/golua/lua
 
 You can then try to run the examples:
 
-	$ cd /usr/local/go/src/pkg/github.com/aarzilli/golua/_example/
+	$ cd golua/_example/
 	$ go run basic.go
 	$ go run alloc.go
 	$ go run panic.go
 	$ go run userdata.go
+
+This library is configured using build tags. By default it will look for a library (or "shared object") called:
+
+* lua5.1 on Linux and macOS
+* lua on Windows
+* lua-5.1 on FreeBSD
+
+If this doesn't work `-tags luadash5.1` can be used to force `lua-5.1`, and `-tags llua` can be used to force `lua`.
+
+If you want to statically link to liblua.a you can do that with `-tags luaaa`. Luajit can also be used by specifying `-tags luajit`.
+
+The library uses lua5.1 by default but also supports lua5.2 by specifying `-tags lua52` and lua5.3 by specifying `-tags lua53`.
 
 QUICK START
 ---------------------
@@ -40,7 +42,7 @@ Lua's Virtual Machine is stack based, you can call lua functions like this:
 
 ```go
 // push "print" function on the stack
-L.GetField(lua.LUA_GLOBALSINDEX, "print")
+L.GetGlobal("print")
 // push the string "Hello World!" on the stack
 L.PushString("Hello World!")
 // call print with one argument, expecting no results
@@ -109,8 +111,7 @@ ON THREADS AND COROUTINES
 ODDS AND ENDS
 ---------------------
 
-* Support for lua 5.2 is in the lua5.2 branch, this branch only supports lua5.1.
-* Support for lua 5.3 is in the lua5.3 branch.
+* If you want to build against lua5.2 or lua5.3 use the build tags lua52 or lua53
 * Compiling from source yields only a static link library (liblua.a), you can either produce the dynamic link library on your own or use the `luaa` build tag.
 
 LUAJIT

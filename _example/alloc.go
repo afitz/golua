@@ -46,7 +46,7 @@ func main() {
 	L.SetAllocf(A2)
 
 	for i := 0; i < 10; i++ {
-		L.GetField(lua.LUA_GLOBALSINDEX, "print")
+		L.GetGlobal("print")
 		L.PushString("Hello World!")
 		L.Call(1, 0)
 	}

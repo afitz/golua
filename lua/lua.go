@@ -6,14 +6,27 @@
 package lua
 
 /*
-#cgo CFLAGS: -I ${SRCDIR}/lua
+#cgo !lua52,!lua53 CFLAGS: -I ${SRCDIR}/lua51
+#cgo lua52 CFLAGS: -I ${SRCDIR}/lua52
+#cgo lua53 CFLAGS: -I ${SRCDIR}/lua53
 #cgo llua LDFLAGS: -llua
+
 #cgo luaa LDFLAGS: -llua -lm -ldl
 #cgo luajit LDFLAGS: -lluajit-5.1
 #cgo lluadash5.1 LDFLAGS: -llua-5.1
-#cgo linux,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -llua5.1
-#cgo darwin,!llua,!luaa,!luajit,!lluadash5.1 pkg-config: lua5.1
-#cgo freebsd,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -llua-5.1
+
+#cgo linux,!lua52,!lua53,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -llua5.1
+#cgo linux,lua52,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -llua5.2
+#cgo linux,lua53,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -llua5.3
+
+#cgo darwin,!lua52,!lua53,!llua,!luaa,!luajit,!lluadash5.1 pkg-config: lua5.1
+#cgo darwin,lua52,!llua,!luaa,!luajit,!lluadash5.1 pkg-config: lua5.2
+#cgo darwin,lua53,!llua,!luaa,!luajit,!lluadash5.1 pkg-config: lua5.3
+
+#cgo freebsd,!lua52,!lua53,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -llua-5.1
+#cgo freebsd,lua52,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -llua-5.2
+#cgo freebsd,lua53,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -llua-5.3
+
 #cgo windows,!llua,!luaa,!luajit,!lluadash5.1 LDFLAGS: -L${SRCDIR} -llua -lmingwex -lmingw32
 
 #include <lua.h>
@@ -182,10 +195,6 @@ func (L *State) AtPanic(panicf LuaGoFunction) (oldpanicf LuaGoFunction) {
 	return nil
 }
 
-func (L *State) pcall(nargs, nresults, errfunc int) int {
-	return int(C.lua_pcall(L.s, C.int(nargs), C.int(nresults), C.int(errfunc)))
-}
-
 func (L *State) callEx(nargs, nresults int, catch bool) (err error) {
 	if catch {
 		defer func() {
@@ -244,16 +253,8 @@ func (L *State) CreateTable(narr int, nrec int) {
 	C.lua_createtable(L.s, C.int(narr), C.int(nrec))
 }
 
-// lua_equal
-func (L *State) Equal(index1, index2 int) bool {
-	return C.lua_equal(L.s, C.int(index1), C.int(index2)) == 1
-}
-
 // lua_gc
 func (L *State) GC(what, data int) int { return int(C.lua_gc(L.s, C.int(what), C.int(data))) }
-
-// lua_getfenv
-func (L *State) GetfEnv(index int) { C.lua_getfenv(L.s, C.int(index)) }
 
 // lua_getfield
 func (L *State) GetField(index int, k string) {
@@ -261,9 +262,6 @@ func (L *State) GetField(index int, k string) {
 	defer C.free(unsafe.Pointer(Ck))
 	C.lua_getfield(L.s, C.int(index), Ck)
 }
-
-// Pushes on the stack the value of a global variable (lua_getglobal)
-func (L *State) GetGlobal(name string) { L.GetField(LUA_GLOBALSINDEX, name) }
 
 // lua_getmetatable
 func (L *State) GetMetaTable(index int) bool {
@@ -275,9 +273,6 @@ func (L *State) GetTable(index int) { C.lua_gettable(L.s, C.int(index)) }
 
 // lua_gettop
 func (L *State) GetTop() int { return int(C.lua_gettop(L.s)) }
-
-// lua_insert
-func (L *State) Insert(index int) { C.lua_insert(L.s, C.int(index)) }
 
 // Returns true if lua_type == LUA_TBOOLEAN
 func (L *State) IsBoolean(index int) bool {
@@ -332,11 +327,6 @@ func (L *State) IsThread(index int) bool {
 // lua_isuserdata
 func (L *State) IsUserdata(index int) bool { return C.lua_isuserdata(L.s, C.int(index)) == 1 }
 
-// lua_lessthan
-func (L *State) LessThan(index1, index2 int) bool {
-	return C.lua_lessthan(L.s, C.int(index1), C.int(index2)) == 1
-}
-
 // Creates a new lua interpreter state with the given allocation function
 func NewStateAlloc(f Alloc) *State {
 	ls := C.clua_newstate(unsafe.Pointer(&f))
@@ -363,10 +353,6 @@ func (L *State) Next(index int) int {
 }
 
 // lua_objlen
-func (L *State) ObjLen(index int) uint {
-	return uint(C.lua_objlen(L.s, C.int(index)))
-}
-
 // lua_pop
 func (L *State) Pop(n int) {
 	//Why is this implemented this way? I don't get it...
@@ -431,19 +417,9 @@ func (L *State) RawGet(index int) {
 	C.lua_rawget(L.s, C.int(index))
 }
 
-// lua_rawgeti
-func (L *State) RawGeti(index int, n int) {
-	C.lua_rawgeti(L.s, C.int(index), C.int(n))
-}
-
 // lua_rawset
 func (L *State) RawSet(index int) {
 	C.lua_rawset(L.s, C.int(index))
-}
-
-// lua_rawseti
-func (L *State) RawSeti(index int, n int) {
-	C.lua_rawseti(L.s, C.int(index), C.int(n))
 }
 
 // Registers a Go function as a global variable
@@ -452,29 +428,9 @@ func (L *State) Register(name string, f LuaGoFunction) {
 	L.SetGlobal(name)
 }
 
-// lua_remove
-func (L *State) Remove(index int) {
-	C.lua_remove(L.s, C.int(index))
-}
-
-// lua_replace
-func (L *State) Replace(index int) {
-	C.lua_replace(L.s, C.int(index))
-}
-
-// lua_resume
-func (L *State) Resume(narg int) int {
-	return int(C.lua_resume(L.s, C.int(narg)))
-}
-
 // lua_setallocf
 func (L *State) SetAllocf(f Alloc) {
 	C.clua_setallocf(L.s, unsafe.Pointer(&f))
-}
-
-// lua_setfenv
-func (L *State) SetfEnv(index int) {
-	C.lua_setfenv(L.s, C.int(index))
 }
 
 // lua_setfield
@@ -482,13 +438,6 @@ func (L *State) SetField(index int, k string) {
 	Ck := C.CString(k)
 	defer C.free(unsafe.Pointer(Ck))
 	C.lua_setfield(L.s, C.int(index), Ck)
-}
-
-// lua_setglobal
-func (L *State) SetGlobal(name string) {
-	Cname := C.CString(name)
-	defer C.free(unsafe.Pointer(Cname))
-	C.lua_setfield(L.s, C.int(LUA_GLOBALSINDEX), Cname)
 }
 
 // lua_setmetatable
@@ -553,16 +502,6 @@ func (L *State) ToBytes(index int) []byte {
 	return C.GoBytes(unsafe.Pointer(b), C.int(size))
 }
 
-// lua_tointeger
-func (L *State) ToInteger(index int) int {
-	return int(C.lua_tointeger(L.s, C.int(index)))
-}
-
-// lua_tonumber
-func (L *State) ToNumber(index int) float64 {
-	return float64(C.lua_tonumber(L.s, C.int(index)))
-}
-
 // lua_topointer
 func (L *State) ToPointer(index int) uintptr {
 	return uintptr(C.lua_topointer(L.s, C.int(index)))
@@ -592,11 +531,6 @@ func (L *State) Typename(tp int) string {
 // lua_xmove
 func XMove(from *State, to *State, n int) {
 	C.lua_xmove(from.s, to.s, C.int(n))
-}
-
-// lua_yield
-func (L *State) Yield(nresults int) int {
-	return int(C.lua_yield(L.s, C.int(nresults)))
 }
 
 // Restricted library opens

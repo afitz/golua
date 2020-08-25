@@ -7,4 +7,8 @@ before_install:
   - sudo apt-get install -y liblua5.2-dev
   - sudo apt-get install -y liblua5.3-dev
 install: true
-script: go test -v  github.com/aarzilli/golua/lua
+script:
+  - go test -v  github.com/aarzilli/golua/lua
+  - go test -v -tags lua52 github.com/aarzilli/golua/lua
+  - go test -v -tags lua53 github.com/aarzilli/golua/lua
+

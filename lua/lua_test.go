@@ -173,7 +173,7 @@ func TestLikeBasic(t *testing.T) {
 		return 0
 	}
 
-	L.GetField(LUA_GLOBALSINDEX, "print")
+	L.GetGlobal("print")
 	L.PushString("Hello World!")
 	if err := L.Call(1, 0); err != nil {
 		t.Fatalf("Call to print returned error")
