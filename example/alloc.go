@@ -1,6 +1,6 @@
 package main
 
-import lua "lua51"
+import lua "golua"
 import "unsafe"
 import "fmt"
 
