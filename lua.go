@@ -5,10 +5,6 @@ package lua51
 import "C"
 
 import "unsafe"
-//TODO: remove
-import "fmt"
-
-
 
 
 //like lua_Writer, but as p will contain capacity, not needed as separate param
@@ -101,24 +97,23 @@ func golua_callgofunction(L interface{}, fid uint) int {
 func golua_gchook(L interface{}, id uint) int {
 	L1 := L.(*State);
 	L1.unregister(id);
-	fmt.Printf("GC id: %d\n",id);
 	return 0;
 }
 
 //export golua_callpanicfunction
-func callpanicfunction(L interface{}, id uint) int {
+func golua_callpanicfunction(L interface{}, id uint) int {
 	L1 := L.(*State);
 	f := L1.registry[id].(GoFunction);
 	return f(L1);
 }
 
 //export golua_idtointerface
-func idtointerface(id uint) interface{} {
+func golua_idtointerface(id uint) interface{} {
 	return id;
 }
 
 //export golua_cfunctiontointerface
-func cfunctiontointerface(f *uintptr) interface{} {
+func golua_cfunctiontointerface(f *uintptr) interface{} {
 	return f;
 }
 
@@ -157,7 +152,7 @@ func (L *State) NewUserdata(size uintptr) unsafe.Pointer {
 
 type Alloc func(ptr unsafe.Pointer, osize uint, nsize uint) unsafe.Pointer;
 //export golua_callallocf
-func callAllocf(fp uintptr,	ptr uintptr,
+func golua_callallocf(fp uintptr,	ptr uintptr,
 			    osize uint,			nsize uint) uintptr {
 	return uintptr((*((*Alloc)(unsafe.Pointer(fp))))(unsafe.Pointer(ptr),osize,nsize));
 }
