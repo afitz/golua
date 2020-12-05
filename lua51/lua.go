@@ -5,8 +5,6 @@ package lua51
 import "C"
 
 import "unsafe"
-//TODO: remove
-import "fmt"
 
 
 
@@ -101,7 +99,6 @@ func golua_callgofunction(L interface{}, fid uint) int {
 func golua_gchook(L interface{}, id uint) int {
 	L1 := L.(*State);
 	L1.unregister(id);
-	fmt.Printf("GC id: %d\n",id);
 	return 0;
 }
 
@@ -364,6 +361,16 @@ func (L *State) PushValue(index int) {
 	C.lua_pushvalue(L.s, C.int(index));
 }
 
+func (L *State) PushAny(z interface{}) {
+	switch v := z.(type) {
+		case string:  L.PushString(v)
+		case int:     L.PushInteger(v)
+		case float64: L.PushNumber(v)
+		case bool:    L.PushBoolean(v)
+		default:      L.PushNil()
+	}
+}
+
 func (L *State) RawEqual(index1 int, index2 int) bool {
 	return C.lua_rawequal(L.s, C.int(index1), C.int(index2)) != 0;
 }
@@ -423,6 +430,13 @@ func (L *State) SetMetaTable(index int) {
 
 func (L *State) SetTable(index int) {
 	C.lua_settable(L.s, C.int(index));
+}
+
+func (L *State) SetTableAny(index int, key interface {}, value interface {}){
+	// don't forget about pushes while calling with relative index
+	L.PushAny(key)
+	L.PushAny(value)
+	L.SetTable(index)
 }
 
 func (L *State) SetTop(index int) {
