@@ -1,5 +1,5 @@
 language: go
-dist: trusty
+dist: xenial
 before_install:
   - sudo add-apt-repository ppa:vbernat/haproxy-1.6 -y
   - sudo apt-get -qq update
